@@ -182,7 +182,7 @@ int basename_special_directories(void)
   }
 
   path = ".";
-  cpj_path_get_basename(path, &basename, &length);
+  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 1) {
     return EXIT_FAILURE;

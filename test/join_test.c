@@ -14,7 +14,7 @@ int join_multiple(void)
   paths[1] = "../world";
   paths[2] = NULL;
 
-  length = cpj_path_join_multiple(paths, buffer, sizeof(buffer));
+  length = cpj_path_join_multiple(CPJ_STYLE_UNIX, paths, buffer, sizeof(buffer));
 
   if (length != 11) {
     return EXIT_FAILURE;

@@ -60,7 +60,7 @@ int dirname_special_directories(void)
   }
 
   path = ".";
-  cpj_path_get_dirname(path, &length);
+  cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
 
   if (length != 0) {
     return EXIT_FAILURE;

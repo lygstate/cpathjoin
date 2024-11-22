@@ -84,21 +84,3 @@ int windows_get_root(void)
 
   return EXIT_SUCCESS;
 }
-
-int windows_change_style(void)
-{
-  enum cpj_path_style style;
-
-  style = cpj_path_get_style();
-  if (style == CPJ_STYLE_WINDOWS) {
-      if (cpj_path_get_style(CPJ_STYLE_UNIX, ) != CPJ_STYLE_UNIX) {
-      return EXIT_FAILURE;
-    }
-  } else {
-      if (cpj_path_get_style(CPJ_STYLE_WINDOWS, ) != CPJ_STYLE_WINDOWS) {
-      return EXIT_FAILURE;
-    }
-  }
-
-  return EXIT_SUCCESS;
-}

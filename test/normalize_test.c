@@ -153,7 +153,7 @@ int normalize_terminated(void)
   memset(result, 1, sizeof(result));
 
   for (i = 0; i < 7; ++i) {
-    count = cpj_path_normalize(input, result, i);
+    count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, i);
 
     if (i != 0 && expected_size < i) {
       n = expected_size;

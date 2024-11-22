@@ -13,11 +13,11 @@ int segment_change_overlap(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "longer_segment", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "longer_segment", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\longer_segment\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -37,11 +37,11 @@ int segment_change_with_separator(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "other\\fancy", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "other\\fancy", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\other\\fancy\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -61,11 +61,11 @@ int segment_change_empty(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -85,11 +85,11 @@ int segment_change_trim(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "//other/\\\\", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "//other/\\\\", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\other\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -109,18 +109,18 @@ int segment_change_last(void)
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\cool\\other\\") != 0) {
     return EXIT_FAILURE;
   }
 
   path = "C:\\this\\cool\\path";
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\cool\\other") != 0) {
     return EXIT_FAILURE;
@@ -140,18 +140,18 @@ int segment_change_first(void)
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\other\\cool\\path\\") != 0) {
     return EXIT_FAILURE;
   }
 
   path = "this\\cool\\path\\";
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "other\\cool\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -171,11 +171,11 @@ int segment_change_simple(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(CPJ_STYLE_WINDOWS, &segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\other\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -198,7 +198,7 @@ int segment_back_with_root(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -206,7 +206,7 @@ int segment_back_with_root(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -228,7 +228,7 @@ int segment_type(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -236,7 +236,7 @@ int segment_type(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -244,7 +244,7 @@ int segment_type(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -252,7 +252,7 @@ int segment_type(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -274,19 +274,19 @@ int segment_previous_too_far_root(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -304,19 +304,19 @@ int segment_previous_too_far(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -338,7 +338,7 @@ int segment_previous_relative(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -346,7 +346,7 @@ int segment_previous_relative(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -354,7 +354,7 @@ int segment_previous_relative(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -376,7 +376,7 @@ int segment_previous_absolute(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -384,7 +384,7 @@ int segment_previous_absolute(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -392,7 +392,7 @@ int segment_previous_absolute(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -414,7 +414,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -422,7 +422,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -430,7 +430,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
   
@@ -444,7 +444,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -452,7 +452,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -460,7 +460,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -482,7 +482,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -490,7 +490,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -498,7 +498,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
   
@@ -512,7 +512,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -520,7 +520,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -528,7 +528,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(CPJ_STYLE_WINDOWS, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -546,15 +546,15 @@ int segment_next_too_far(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_next_segment(&segment)) {
+  if (cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_next_segment(&segment)) {
+  if (cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -576,7 +576,7 @@ int segment_next(void)
     return EXIT_FAILURE;
   }
 
-  if (!cpj_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -584,7 +584,7 @@ int segment_next(void)
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_get_next_segment(&segment)) {
+  if (cpj_path_get_next_segment(CPJ_STYLE_UNIX, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -608,7 +608,7 @@ int segment_last(void)
 
   path = "hello_world/abc";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -636,7 +636,7 @@ int segment_first(void)
 
   path = "hello_world/abc";
 
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 

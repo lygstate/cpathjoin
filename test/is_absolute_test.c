@@ -30,7 +30,7 @@ int is_absolute_device_question_mark(void)
 
 int is_absolute_device_dot(void)
 {
-  cpj_path_is_absolute("\\\\.\\mydevice\\test");
+  cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "\\\\.\\mydevice\\test");
 
   if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "\\\\.\\mydevice\\test")) {
     return EXIT_FAILURE;

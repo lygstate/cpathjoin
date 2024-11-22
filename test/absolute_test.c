@@ -15,13 +15,13 @@ int absolute_check(void)
   size_t i;
 
   for (i = 0; i < ARRAY_SIZE(relative_paths); ++i) {
-    if (cpj_path_is_absolute(relative_paths[i])) {
+    if (cpj_path_is_absolute(CPJ_STYLE_UNIX, relative_paths[i])) {
       return EXIT_FAILURE;
     }
   }
 
   for (i = 0; i < ARRAY_SIZE(absolute_paths); ++i) {
-    if (!cpj_path_is_absolute(absolute_paths[i])) {
+    if (!cpj_path_is_absolute(CPJ_STYLE_UNIX, absolute_paths[i])) {
       return EXIT_FAILURE;
     }
   }
@@ -171,22 +171,22 @@ int absolute_buffer_reuse(void)
   if (strcmp(path, "/") != 0) {
     return EXIT_FAILURE;
   }
-  cpj_path_get_absolute(path, "see", path, FILENAME_MAX);
+  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "see", path, FILENAME_MAX);
   if (strcmp(path, "/see") != 0) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_get_absolute(path, "dog", path, FILENAME_MAX);
+  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "dog", path, FILENAME_MAX);
   if (strcmp(path, "/see/dog") != 0) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_get_absolute(path, "..", path, FILENAME_MAX);
+  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "..", path, FILENAME_MAX);
   if (strcmp(path, "/see") != 0) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_get_absolute(path, "cat", path, FILENAME_MAX);
+  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "cat", path, FILENAME_MAX);
   if (strcmp(path, "/see/cat") != 0) {
     return EXIT_FAILURE;
   }

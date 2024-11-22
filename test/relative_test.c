@@ -69,13 +69,13 @@ int relative_check(void)
   size_t i;
 
   for (i = 0; i < ARRAY_SIZE(relative_paths); ++i) {
-    if (!cpj_path_is_relative(relative_paths[i])) {
+    if (!cpj_path_is_relative(CPJ_STYLE_UNIX, relative_paths[i])) {
       return EXIT_FAILURE;
     }
   }
 
   for (i = 0; i < ARRAY_SIZE(absolute_paths); ++i) {
-    if (cpj_path_is_relative(absolute_paths[i])) {
+    if (cpj_path_is_relative(CPJ_STYLE_UNIX, absolute_paths[i])) {
       return EXIT_FAILURE;
     }
   }
@@ -90,7 +90,7 @@ int relative_relative_and_absolute(void)
 
   *result = 1;
 
-  length = cpj_path_get_relative("./foo", "/bar", result, sizeof(result));
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "./foo", "/bar", result, sizeof(result));
 
   if (length != 0) {
     return EXIT_FAILURE;
@@ -110,7 +110,7 @@ int relative_different_roots(void)
 
   *result = 1;
 
-  length = cpj_path_get_relative("C:/path/same", "D:/path/same", result,
+  length = cpj_path_get_relative(CPJ_STYLE_WINDOWS, "C:/path/same", "D:/path/same", result,
     sizeof(result));
 
   if (length != 0) {
