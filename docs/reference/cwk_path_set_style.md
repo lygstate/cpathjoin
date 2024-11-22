@@ -31,8 +31,7 @@ int main(int argc, char *argv[])
 {
   size_t length;
   
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-  cpj_path_get_root("C:\\test.txt", &length);
+  cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:\\test.txt", &length);
   printf("The root length is '%zu'.", length);
   return EXIT_SUCCESS;
 }

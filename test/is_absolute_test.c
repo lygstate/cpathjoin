@@ -3,9 +3,7 @@
 
 int is_absolute_relative_windows(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (cpj_path_is_absolute("..\\hello\\world.txt")) {
+  if (cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "..\\hello\\world.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -14,9 +12,7 @@ int is_absolute_relative_windows(void)
 
 int is_absolute_relative_drive(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (cpj_path_is_absolute("C:test.txt")) {
+  if (cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "C:test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -25,9 +21,7 @@ int is_absolute_relative_drive(void)
 
 int is_absolute_device_question_mark(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (!cpj_path_is_absolute("\\\\?\\mydevice\\test")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "\\\\?\\mydevice\\test")) {
     return EXIT_FAILURE;
   }
 
@@ -36,10 +30,9 @@ int is_absolute_device_question_mark(void)
 
 int is_absolute_device_dot(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
   cpj_path_is_absolute("\\\\.\\mydevice\\test");
 
-  if (!cpj_path_is_absolute("\\\\.\\mydevice\\test")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "\\\\.\\mydevice\\test")) {
     return EXIT_FAILURE;
   }
 
@@ -48,9 +41,7 @@ int is_absolute_device_dot(void)
 
 int is_absolute_device_unc(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (!cpj_path_is_absolute("\\\\.\\UNC\\LOCALHOST\\c$\\temp\\test-file.txt")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "\\\\.\\UNC\\LOCALHOST\\c$\\temp\\test-file.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -59,9 +50,7 @@ int is_absolute_device_unc(void)
 
 int is_absolute_unc(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (!cpj_path_is_absolute("\\\\server\\folder\\data")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "\\\\server\\folder\\data")) {
     return EXIT_FAILURE;
   }
 
@@ -70,9 +59,7 @@ int is_absolute_unc(void)
 
 int is_absolute_absolute_drive(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (!cpj_path_is_absolute("C:\\test.txt")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "C:\\test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -81,9 +68,7 @@ int is_absolute_absolute_drive(void)
 
 int is_absolute_unix_drive(void)
 {
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  if (cpj_path_is_absolute("C:\\test.txt")) {
+  if (cpj_path_is_absolute(CPJ_STYLE_UNIX, "C:\\test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -92,9 +77,7 @@ int is_absolute_unix_drive(void)
 
 int is_absolute_unix_backslash(void)
 {
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  if (cpj_path_is_absolute("\\folder\\")) {
+  if (cpj_path_is_absolute(CPJ_STYLE_UNIX, "\\folder\\")) {
     return EXIT_FAILURE;
   }
 
@@ -103,9 +86,7 @@ int is_absolute_unix_backslash(void)
 
 int is_absolute_windows_slash(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (!cpj_path_is_absolute("/test.txt")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "/test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -114,9 +95,7 @@ int is_absolute_windows_slash(void)
 
 int is_absolute_windows_backslash(void)
 {
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (!cpj_path_is_absolute("\\test.txt")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_WINDOWS, "\\test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -125,9 +104,7 @@ int is_absolute_windows_backslash(void)
 
 int is_absolute_relative(void)
 {
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  if (cpj_path_is_absolute("test.txt")) {
+  if (cpj_path_is_absolute(CPJ_STYLE_UNIX, "test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -136,8 +113,7 @@ int is_absolute_relative(void)
 
 int is_absolute_absolute(void)
 {
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  if (!cpj_path_is_absolute("/test.txt")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_UNIX, "/test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -146,8 +122,7 @@ int is_absolute_absolute(void)
 
 int is_absolute_root(void)
 {
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  if (!cpj_path_is_absolute("/")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_UNIX, "/")) {
     return EXIT_FAILURE;
   }
 
@@ -156,8 +131,7 @@ int is_absolute_root(void)
 
 int is_absolute_dir(void)
 {
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  if (!cpj_path_is_absolute("/dir")) {
+  if (!cpj_path_is_absolute(CPJ_STYLE_UNIX, "/dir")) {
     return EXIT_FAILURE;
   }
 

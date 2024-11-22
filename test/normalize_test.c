@@ -12,12 +12,10 @@ int normalize_forward_slashes(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   input = "C:/this/is/a/test/path";
   strcpy(result, input);
   expected = "C:\\this\\is\\a\\test\\path";
-  count = cpj_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_WINDOWS, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -31,12 +29,10 @@ int normalize_back_after_root(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   input = "C:\\..\\this\\is\\a\\test\\path";
   strcpy(result, input);
   expected = "C:\\this\\is\\a\\test\\path";
-  count = cpj_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_WINDOWS, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -50,12 +46,10 @@ int normalize_only_separators(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "////";
   strcpy(result, input);
   expected = "/";
-  count = cpj_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -69,12 +63,10 @@ int normalize_empty(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "test/..";
   strcpy(result, input);
   expected = ".";
-  count = cpj_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -88,12 +80,10 @@ int normalize_overlap(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "/var/./logs/.//test/..//..//////";
   strcpy(result, input);
   expected = "/var";
-  count = cpj_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -107,11 +97,9 @@ int normalize_mixed(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "/var/./logs/.//test/..//..//////";
   expected = "/var";
-  count = cpj_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -125,11 +113,9 @@ int normalize_remove_current(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "/var/././././";
   expected = "/var";
-  count = cpj_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -143,11 +129,9 @@ int normalize_double_separator(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "/var////logs//test/";
   expected = "/var/logs/test";
-  count = cpj_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -161,8 +145,6 @@ int normalize_terminated(void)
   char result[FILENAME_MAX];
   char *input, *expected;
   size_t i, expected_size, n;
-
-  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var/logs/test/../../";
   expected = "/var";
@@ -194,11 +176,9 @@ int normalize_relative_too_far(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "rel/../../";
   expected = "..";
-  count = cpj_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -212,11 +192,9 @@ int normalize_absolute_too_far(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "/var/logs/test/../../../../../../";
   expected = "/";
-  count = cpj_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -230,11 +208,9 @@ int normalize_navigate_back(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "/var/logs/test/../../";
   expected = "/var";
-  count = cpj_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -248,11 +224,9 @@ int normalize_do_nothing(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   input = "/var";
   expected = "/var";
-  count = cpj_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }

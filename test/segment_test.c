@@ -9,9 +9,7 @@ int segment_change_overlap(void)
   char buffer[FILENAME_MAX] = "C:\\this\\cool\\path\\";
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  if (!cpj_path_get_first_segment(buffer, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, buffer, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -34,10 +32,8 @@ int segment_change_with_separator(void)
   char buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\this\\cool\\path\\";
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -60,10 +56,8 @@ int segment_change_empty(void)
   char buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\this\\cool\\path\\";
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -86,10 +80,8 @@ int segment_change_trim(void)
   char buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\this\\cool\\path\\";
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -112,10 +104,8 @@ int segment_change_last(void)
   char buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\this\\cool\\path\\";
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -145,10 +135,8 @@ int segment_change_first(void)
   char buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\this\\cool\\path\\";
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -178,10 +166,8 @@ int segment_change_simple(void)
   char buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\this\\cool\\path\\";
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -203,10 +189,8 @@ int segment_back_with_root(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\this\\path";
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -234,11 +218,9 @@ int segment_type(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "/a/./../.folder/..folder";
 
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -286,11 +268,9 @@ int segment_previous_too_far_root(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "//now/hello_world/abc/";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -318,11 +298,9 @@ int segment_previous_too_far(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "//now/hello_world/abc/";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -350,11 +328,9 @@ int segment_previous_relative(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "now/hello_world/abc/";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -390,11 +366,9 @@ int segment_previous_absolute(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "/now/hello_world/abc/";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -430,11 +404,9 @@ int segment_previous_relative_one_char_first(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "n/hello_world/abc/";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -462,11 +434,9 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
   
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "t\\cool\\path\\";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -502,11 +472,9 @@ int segment_previous_absolute_one_char_first(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "/n/hello_world/abc/";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -534,11 +502,9 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
   
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
   path = "C:\\t\\cool\\path\\";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_WINDOWS, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -574,11 +540,9 @@ int segment_next_too_far(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "/hello_world/abc/";
 
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -602,11 +566,9 @@ int segment_next(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "/hello_world/abc/";
 
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -634,11 +596,9 @@ int segment_last(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "/hello_world/abc";
 
-  if (!cpj_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -664,11 +624,9 @@ int segment_first(void)
   const char *path;
   struct cpj_segment segment;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   path = "/hello_world/abc";
 
-  if (!cpj_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(CPJ_STYLE_UNIX, path, &segment)) {
     return EXIT_FAILURE;
   }
 

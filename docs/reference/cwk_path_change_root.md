@@ -46,9 +46,7 @@ int main(int argc, char *argv[])
 {
   char buffer[FILENAME_MAX];
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  cpj_path_change_root("C:\\test.txt", "D:\\", buffer,
+  cpj_path_change_root(CPJ_STYLE_WINDOWS, "C:\\test.txt", "D:\\", buffer,
     sizeof(buffer));
 
   printf("The new path: '%s'", buffer);

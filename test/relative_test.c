@@ -11,9 +11,7 @@ int relative_root_forward_slashes(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  length = cpj_path_get_relative("C:\\foo\\bar\\baz\\", "C:/foo/bar/file.txt",
+  length = cpj_path_get_relative(CPJ_STYLE_WINDOWS, "C:\\foo\\bar\\baz\\", "C:/foo/bar/file.txt",
     result, sizeof(result));
   if (length != 11) {
     return EXIT_FAILURE;
@@ -31,9 +29,7 @@ int relative_root_path_windows(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  length = cpj_path_get_relative("C:\\this\\is\\path_one", "C:\\", result,
+  length = cpj_path_get_relative(CPJ_STYLE_WINDOWS, "C:\\this\\is\\path_one", "C:\\", result,
     sizeof(result));
   if (length != 8) {
     return EXIT_FAILURE;
@@ -51,9 +47,7 @@ int relative_root_path_unix(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/this/is/path_one", "/", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/this/is/path_one", "/", result,
     sizeof(result));
   if (length != 8) {
     return EXIT_FAILURE;
@@ -73,8 +67,6 @@ int relative_check(void)
   const char *absolute_paths[] = {"/", "/test", "/../test/", "/../another_test",
     "/./simple", "/.././simple"};
   size_t i;
-
-  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   for (i = 0; i < ARRAY_SIZE(relative_paths); ++i) {
     if (!cpj_path_is_relative(relative_paths[i])) {
@@ -96,8 +88,6 @@ int relative_relative_and_absolute(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   *result = 1;
 
   length = cpj_path_get_relative("./foo", "/bar", result, sizeof(result));
@@ -117,8 +107,6 @@ int relative_different_roots(void)
 {
   char result[FILENAME_MAX];
   size_t length;
-
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   *result = 1;
 
@@ -141,9 +129,7 @@ int relative_skip_all(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/../../", "/../../", result, sizeof(result));
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/../../", "/../../", result, sizeof(result));
   if (length != 1) {
     return EXIT_FAILURE;
   }
@@ -160,9 +146,7 @@ int relative_target_div_skipped_end(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/path/same", "/path/not_same/ho/..", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/path/same", "/path/not_same/ho/..", result,
     sizeof(result));
   if (length != 11) {
     return EXIT_FAILURE;
@@ -180,9 +164,7 @@ int relative_base_div_skipped_end(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/path/not_same/ho/..", "/path/same", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/path/not_same/ho/..", "/path/same", result,
     sizeof(result));
   if (length != 7) {
     return EXIT_FAILURE;
@@ -200,9 +182,7 @@ int relative_target_skipped_end(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/path/same", "/path/same/ho/..", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/path/same", "/path/same/ho/..", result,
     sizeof(result));
   if (length != 1) {
     return EXIT_FAILURE;
@@ -220,9 +200,7 @@ int relative_base_skipped_end(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/path/same/ho/..", "/path/same", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/path/same/ho/..", "/path/same", result,
     sizeof(result));
   if (length != 1) {
     return EXIT_FAILURE;
@@ -240,9 +218,7 @@ int relative_equal(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/path/same", "/path/same", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/path/same", "/path/same", result,
     sizeof(result));
   if (length != 1) {
     return EXIT_FAILURE;
@@ -260,9 +236,7 @@ int relative_same_base(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/dir/dir", "/dir/dir3/file", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/dir/dir", "/dir/dir3/file", result,
     sizeof(result));
   if (length != 12) {
     return EXIT_FAILURE;
@@ -280,9 +254,7 @@ int relative_long_target(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/path/long/one", "/path/long/one/two", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/path/long/one", "/path/long/one/two", result,
     sizeof(result));
   if (length != 3) {
     return EXIT_FAILURE;
@@ -300,9 +272,7 @@ int relative_long_base(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/path/long/one/two", "/path/long/one", result,
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/path/long/one/two", "/path/long/one", result,
     sizeof(result));
   if (length != 2) {
     return EXIT_FAILURE;
@@ -320,9 +290,7 @@ int relative_relative(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("./this/is/path_one", "./this/is/path_two",
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "./this/is/path_one", "./this/is/path_two",
     result, sizeof(result));
   if (length != 11) {
     return EXIT_FAILURE;
@@ -340,9 +308,7 @@ int relative_simple(void)
   char result[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  length = cpj_path_get_relative("/this/is/path_one", "/this/is/path_two",
+  length = cpj_path_get_relative(CPJ_STYLE_UNIX, "/this/is/path_one", "/this/is/path_two",
     result, sizeof(result));
   if (length != 11) {
     return EXIT_FAILURE;

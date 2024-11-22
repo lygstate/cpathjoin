@@ -46,9 +46,7 @@ int main(int argc, char *argv[])
 {
   char buffer[FILENAME_MAX];
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-
-  cpj_path_change_basename("C:\\test.txt", "another.txt", buffer,
+  cpj_path_change_basename(CPJ_STYLE_WINDOWS, "C:\\test.txt", "another.txt", buffer,
     sizeof(buffer));
 
   printf("The new path: '%s'", buffer);

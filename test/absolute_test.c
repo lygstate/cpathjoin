@@ -14,8 +14,6 @@ int absolute_check(void)
     "/./simple", "/.././simple"};
   size_t i;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
   for (i = 0; i < ARRAY_SIZE(relative_paths); ++i) {
     if (cpj_path_is_absolute(relative_paths[i])) {
       return EXIT_FAILURE;
@@ -36,8 +34,7 @@ int absolute_too_far(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  length = cpj_path_get_absolute("/hello/there", "../../../../../", buffer,
+  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "../../../../../", buffer,
     sizeof(buffer));
 
   if (length != 1) {
@@ -56,8 +53,7 @@ int absolute_normalization(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  length = cpj_path_get_absolute("/hello//../there", "test//thing", buffer,
+  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello//../there", "test//thing", buffer,
     sizeof(buffer));
 
   if (length != 17) {
@@ -76,8 +72,7 @@ int absolute_mixed(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  length = cpj_path_get_absolute("hello/there", "/test", buffer,
+  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "hello/there", "/test", buffer,
     sizeof(buffer));
 
   if (length != 5) {
@@ -96,8 +91,7 @@ int absolute_unix_relative_base(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  length = cpj_path_get_absolute("hello/there", "test", buffer, sizeof(buffer));
+  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "hello/there", "test", buffer, sizeof(buffer));
 
   if (length != 17) {
     return EXIT_FAILURE;
@@ -115,8 +109,7 @@ int absolute_windows_relative_base(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_WINDOWS);
-  length = cpj_path_get_absolute("hello\\there", "test", buffer, sizeof(buffer));
+  length = cpj_path_get_absolute(CPJ_STYLE_WINDOWS, "hello\\there", "test", buffer, sizeof(buffer));
 
   if (length != 17) {
     return EXIT_FAILURE;
@@ -134,8 +127,7 @@ int absolute_absolute_path(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  length = cpj_path_get_absolute("/hello/there", "/test", buffer,
+  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "/test", buffer,
     sizeof(buffer));
 
   if (length != 5) {
@@ -154,8 +146,7 @@ int absolute_simple(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-  length = cpj_path_get_absolute("/hello/there", "..", buffer, sizeof(buffer));
+  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "..", buffer, sizeof(buffer));
 
   if (length != 6) {
     return EXIT_FAILURE;
@@ -176,9 +167,7 @@ int absolute_buffer_reuse(void)
   memset(path, 1, FILENAME_MAX);
   path[0] = '\0';
 
-  cpj_path_set_style(CPJ_STYLE_UNIX);
-
-  cpj_path_get_absolute(path, "/", path, FILENAME_MAX);
+  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "/", path, FILENAME_MAX);
   if (strcmp(path, "/") != 0) {
     return EXIT_FAILURE;
   }
