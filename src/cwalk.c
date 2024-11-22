@@ -140,14 +140,20 @@ static bool cwk_path_is_string_equal(const char *first, const char *second,
   // However, if this is windows we will have to compare case insensitively.
   // Since there is no standard method to do that we will have to do it on our
   // own.
-  while (*first && *second && first_size > 0) {
+  while (first_size > 0) {
+    int a = *first;
+    int b = *second;
+    if (!(a && b)) {
+      break;
+    }
+
     // We can consider the string to be not equal if the two lowercase
     // characters are not equal. The two chars may also be separators, which
     // means they would be equal.
-    are_both_separators = strchr(separators[path_style], *first) != NULL &&
-                          strchr(separators[path_style], *second) != NULL;
+    are_both_separators = strchr(separators[path_style], a) != NULL &&
+                          strchr(separators[path_style], b) != NULL;
 
-    if (tolower(*first) != tolower(*second) && !are_both_separators) {
+    if (tolower(a) != tolower(b) && !are_both_separators) {
       return false;
     }
 
