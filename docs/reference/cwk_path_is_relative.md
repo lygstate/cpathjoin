@@ -1,5 +1,5 @@
 ---
-title: cwk_path_is_relative
+title: cpj_path_is_relative
 description: Determine whether the path is relative or not.
 ---
 
@@ -8,7 +8,7 @@ Determine whether the path is relative or not.
 
 ## Description
 ```c
-bool cwk_path_is_relative(const char *path);
+bool cpj_path_is_relative(const char *path);
 ```
 
 This function checks whether the path is a relative path or not. A path is considered to be relative if the root does not end with a separator.
@@ -38,14 +38,14 @@ Returns ``true`` if the path is relative or ``false`` otherwise.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 int main(int argc, char *argv[])
 {
-  if(cwk_path_is_relative("my/path.txt")) {
+  if(cpj_path_is_relative("my/path.txt")) {
     printf("The root is absolute.");
   } else {
     printf("The root is relative.");

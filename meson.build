@@ -1,29 +1,29 @@
-project('cwalk', 'c',
+project('cpj', 'c',
   license: 'MIT',
   version: '1.2.9',
   meson_version: '>= 0.57.0'
 )
 
-cwalk_inc = include_directories('include')
+cpj_inc = include_directories('include')
 
-cwalk_c_args = []
+cpj_c_args = []
 if get_option('default_library') == 'shared'
-  cwalk_c_args += '-DCWK_SHARED'
+  cpj_c_args += '-DCPJ_SHARED'
 endif
 
-cwalk = library('cwalk', 'src/cwalk.c',
+cpj = library('cpj', 'src/cpj.c',
   install: true,
-  include_directories: cwalk_inc,
-  c_args: cwalk_c_args
+  include_directories: cpj_inc,
+  c_args: cpj_c_args
 )
 
-install_headers('include/cwalk.h')
+install_headers('include/cpj.h')
 
-cwalk_dep = declare_dependency(include_directories: 'include', link_with: cwalk)
+cpj_dep = declare_dependency(include_directories: 'include', link_with: cpj)
 
 if get_option('ENABLE_TESTS')
   subdir('test')
 endif
 
 pkg = import('pkgconfig')
-pkg.generate(cwalk)
+pkg.generate(cpj)

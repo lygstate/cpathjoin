@@ -1,4 +1,4 @@
-cwalktest_sources = files(
+cpjtest_sources = files(
     'main.c',
     'absolute_test.c',
     'basename_test.c',
@@ -16,8 +16,8 @@ cwalktest_sources = files(
     'windows_test.c',
 )
 
-cwalktest = executable('cwalktest',
-    sources: cwalktest_sources,
-    dependencies: cwalk_dep,
+cpjtest = executable('cpjtest',
+    sources: cpjtest_sources,
+    dependencies: cpj_dep,
 )
-test('cwalktest', cwalktest)
+test('cpjtest', cpjtest)

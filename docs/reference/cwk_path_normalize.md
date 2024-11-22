@@ -1,5 +1,5 @@
 ---
-title: cwk_path_normalize
+title: cpj_path_normalize
 description: Creates a normalized version of the path.
 ---
 
@@ -8,7 +8,7 @@ Creates a normalized version of the path.
 
 ## Description
 ```c
-size_t cwk_path_normalize(const char *path, char *buffer, size_t buffer_size);
+size_t cpj_path_normalize(const char *path, char *buffer, size_t buffer_size);
 ```
 
 This function creates a normalized version of the path within the specified buffer. This function will not write out more than the specified buffer can contain. However, the generated string is always null-terminated - even if not the whole path is written out. The returned value is the amount of characters which the resulting path would take if it was not truncated (excluding the null-terminating character). The path may be the same memory address as the buffer.
@@ -42,7 +42,7 @@ The size which the complete normalized path has if it was not truncated.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdlib.h>
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
   // The following function cleans up the input path and writes it
   // to the result buffer.
-  cwk_path_normalize("/var/log/weird/////path/.././..///", result,
+  cpj_path_normalize("/var/log/weird/////path/.././..///", result,
     sizeof(result));
   
   printf("%s\n", result);

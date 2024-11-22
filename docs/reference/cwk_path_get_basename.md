@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_basename
+title: cpj_path_get_basename
 description: Gets the basename of a file path.
 ---
 
@@ -8,7 +8,7 @@ Gets the basename of a file path.
 
 ## Description
 ```c
-void cwk_path_get_basename(const char *path, const char **basename,
+void cpj_path_get_basename(const char *path, const char **basename,
   size_t *length);
 ```
 
@@ -34,7 +34,7 @@ This function gets the basename of a file path. The basename is the last segment
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
   const char *basename;
   size_t length;
 
-  cwk_path_get_basename("/my/path.txt", &basename, &length);
+  cpj_path_get_basename("/my/path.txt", &basename, &length);
   printf("The basename is: '%.*s'", length, basename);
 
   return EXIT_SUCCESS;

@@ -1,5 +1,5 @@
 ---
-title: cwk_path_change_extension
+title: cpj_path_change_extension
 description: Changes the extension of a file path.
 ---
 
@@ -8,7 +8,7 @@ Changes the extension of a file path.
 
 ## Description
 ```c
-size_t cwk_path_change_extension(const char *path, const char *new_extension,
+size_t cpj_path_change_extension(const char *path, const char *new_extension,
   char *buffer, size_t buffer_size);
 ```
 
@@ -22,7 +22,7 @@ have, even if it was not written out completely. The path may be the same
 memory address as the buffer.
 
 **Note:** This function does not normalize the resulting path. You can use 
-**[cwk_path_normalize]({{ site.baseurl }}{% link reference/cwk_path_normalize.md %})**
+**[cpj_path_normalize]({{ site.baseurl }}{% link reference/cpj_path_normalize.md %})**
 to do so.
 
 **Note:** If the ``new_extension`` parameter starts with a dot, the first dot will
@@ -39,7 +39,7 @@ Returns the total size which the output would have if it was not truncated.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
 {
   char buffer[FILENAME_MAX];
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  cwk_path_change_extension("C:\\test.txt", "md", buffer,
+  cpj_path_change_extension("C:\\test.txt", "md", buffer,
     sizeof(buffer));
 
   printf("The new path: '%s'", buffer);

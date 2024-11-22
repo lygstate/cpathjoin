@@ -1,4 +1,4 @@
-#include <cwalk.h>
+#include <cpj.h>
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,9 +9,9 @@ int extension_change_with_trailing_slash(void)
   char buffer[FILENAME_MAX] = "/folder/file.txt/";
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  n = cwk_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
+  n = cpj_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
   if (n != 16) {
     return EXIT_FAILURE;
   }
@@ -28,9 +28,9 @@ int extension_change_hidden_file(void)
   char buffer[FILENAME_MAX] = "/folder/.hidden_file.txt";
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  n = cwk_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
+  n = cpj_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
   if (n != 23) {
     return EXIT_FAILURE;
   }
@@ -47,9 +47,9 @@ int extension_change_overlap_long(void)
   char buffer[FILENAME_MAX] = "/test.txt/";
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  n = cwk_path_change_extension(buffer, ".text", buffer, sizeof(buffer));
+  n = cpj_path_change_extension(buffer, ".text", buffer, sizeof(buffer));
   if (n != 11) {
     return EXIT_FAILURE;
   }
@@ -66,9 +66,9 @@ int extension_change_overlap(void)
   char buffer[FILENAME_MAX] = "/test.txt/";
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  n = cwk_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
+  n = cpj_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
   if (n != 9) {
     return EXIT_FAILURE;
   }
@@ -85,9 +85,9 @@ int extension_change_with_dot(void)
   char buffer[FILENAME_MAX];
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  n = cwk_path_change_extension("/test.txt", ".md", buffer, sizeof(buffer));
+  n = cpj_path_change_extension("/test.txt", ".md", buffer, sizeof(buffer));
   if (n != 8) {
     return EXIT_FAILURE;
   }
@@ -104,9 +104,9 @@ int extension_change_remove(void)
   char buffer[FILENAME_MAX];
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  n = cwk_path_change_extension("/test.txt", "", buffer, sizeof(buffer));
+  n = cpj_path_change_extension("/test.txt", "", buffer, sizeof(buffer));
   if (n != 5) {
     return EXIT_FAILURE;
   }
@@ -123,9 +123,9 @@ int extension_change_no_extension(void)
   char buffer[FILENAME_MAX] = "C:\\file";
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  n = cwk_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
+  n = cpj_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
   if (n != 10) {
     return EXIT_FAILURE;
   }
@@ -142,9 +142,9 @@ int extension_change_no_basename(void)
   char buffer[FILENAME_MAX] = "C:\\";
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  n = cwk_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
+  n = cpj_path_change_extension(buffer, ".md", buffer, sizeof(buffer));
   if (n != 6) {
     return EXIT_FAILURE;
   }
@@ -161,9 +161,9 @@ int extension_change_simple(void)
   char buffer[FILENAME_MAX];
   size_t n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  n = cwk_path_change_extension("/test.txt", "md", buffer, sizeof(buffer));
+  n = cpj_path_change_extension("/test.txt", "md", buffer, sizeof(buffer));
   if (n != 8) {
     return EXIT_FAILURE;
   }
@@ -177,8 +177,8 @@ int extension_change_simple(void)
 
 int extension_check_without(void)
 {
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  if (cwk_path_has_extension("/my/path")) {
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  if (cpj_path_has_extension("/my/path")) {
     return EXIT_FAILURE;
   }
 
@@ -187,8 +187,8 @@ int extension_check_without(void)
 
 int extension_check_empty(void)
 {
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  if (cwk_path_has_extension("")) {
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  if (cpj_path_has_extension("")) {
     return EXIT_FAILURE;
   }
 
@@ -197,8 +197,8 @@ int extension_check_empty(void)
 
 int extension_check_simple(void)
 {
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  if (!cwk_path_has_extension("/my/path.txt")) {
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  if (!cpj_path_has_extension("/my/path.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -210,9 +210,9 @@ int extension_get_multiple(void)
   const char *path, *extension;
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
   path = "/my/path.abc.txt.tests";
-  if (!cwk_path_get_extension(path, &extension, &length)) {
+  if (!cpj_path_get_extension(path, &extension, &length)) {
     return EXIT_FAILURE;
   }
 
@@ -232,9 +232,9 @@ int extension_get_last(void)
   const char *path, *extension;
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
   path = "/my/path.";
-  if (!cwk_path_get_extension(path, &extension, &length)) {
+  if (!cpj_path_get_extension(path, &extension, &length)) {
     return EXIT_FAILURE;
   }
 
@@ -254,9 +254,9 @@ int extension_get_first(void)
   const char *path, *extension;
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
   path = "/my/.path";
-  if (!cwk_path_get_extension(path, &extension, &length)) {
+  if (!cpj_path_get_extension(path, &extension, &length)) {
     return EXIT_FAILURE;
   }
 
@@ -276,9 +276,9 @@ int extension_get_without(void)
   const char *path, *extension;
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
   path = "/my/path";
-  if (cwk_path_get_extension(path, &extension, &length)) {
+  if (cpj_path_get_extension(path, &extension, &length)) {
     return EXIT_FAILURE;
   }
 
@@ -290,9 +290,9 @@ int extension_get_simple(void)
   const char *path, *extension;
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
   path = "/my/path.txt";
-  if (!cwk_path_get_extension(path, &extension, &length)) {
+  if (!cpj_path_get_extension(path, &extension, &length)) {
     return EXIT_FAILURE;
   }
 

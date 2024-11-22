@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_intersection
+title: cpj_path_get_intersection
 description: Finds common portions in two paths.
 ---
 
@@ -8,7 +8,7 @@ Finds common portions in two paths.
 
 ## Signature
 ```c
-size_t cwk_path_get_intersection(const char *path_base, const char *path_other);
+size_t cpj_path_get_intersection(const char *path_base, const char *path_other);
 ```
 
 ## Description
@@ -39,7 +39,7 @@ Returns the number of characters which are common in the base path.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   size_t length;
 
   path = "/this/is/a/test";
-  length = cwk_path_get_intersection(path, "/this/is/a/string");
+  length = cpj_path_get_intersection(path, "/this/is/a/string");
   printf("The common portion is: '%.*s'", length, path);
 
   return EXIT_SUCCESS;

@@ -1,4 +1,4 @@
-#include <cwalk.h>
+#include <cpj.h>
 #include <limits.h>
 #include <memory.h>
 #include <stdint.h>
@@ -12,12 +12,12 @@ int normalize_forward_slashes(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   input = "C:/this/is/a/test/path";
   strcpy(result, input);
   expected = "C:\\this\\is\\a\\test\\path";
-  count = cwk_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -31,12 +31,12 @@ int normalize_back_after_root(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   input = "C:\\..\\this\\is\\a\\test\\path";
   strcpy(result, input);
   expected = "C:\\this\\is\\a\\test\\path";
-  count = cwk_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -50,12 +50,12 @@ int normalize_only_separators(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "////";
   strcpy(result, input);
   expected = "/";
-  count = cwk_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -69,12 +69,12 @@ int normalize_empty(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "test/..";
   strcpy(result, input);
   expected = ".";
-  count = cwk_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -88,12 +88,12 @@ int normalize_overlap(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var/./logs/.//test/..//..//////";
   strcpy(result, input);
   expected = "/var";
-  count = cwk_path_normalize(result, result, sizeof(result));
+  count = cpj_path_normalize(result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -107,11 +107,11 @@ int normalize_mixed(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var/./logs/.//test/..//..//////";
   expected = "/var";
-  count = cwk_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -125,11 +125,11 @@ int normalize_remove_current(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var/././././";
   expected = "/var";
-  count = cwk_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -143,11 +143,11 @@ int normalize_double_separator(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var////logs//test/";
   expected = "/var/logs/test";
-  count = cwk_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -162,7 +162,7 @@ int normalize_terminated(void)
   char *input, *expected;
   size_t i, expected_size, n;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var/logs/test/../../";
   expected = "/var";
@@ -171,7 +171,7 @@ int normalize_terminated(void)
   memset(result, 1, sizeof(result));
 
   for (i = 0; i < 7; ++i) {
-    count = cwk_path_normalize(input, result, i);
+    count = cpj_path_normalize(input, result, i);
 
     if (i != 0 && expected_size < i) {
       n = expected_size;
@@ -194,11 +194,11 @@ int normalize_relative_too_far(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "rel/../../";
   expected = "..";
-  count = cwk_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -212,11 +212,11 @@ int normalize_absolute_too_far(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var/logs/test/../../../../../../";
   expected = "/";
-  count = cwk_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -230,11 +230,11 @@ int normalize_navigate_back(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var/logs/test/../../";
   expected = "/var";
-  count = cwk_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -248,11 +248,11 @@ int normalize_do_nothing(void)
   char result[FILENAME_MAX];
   char *input, *expected;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   input = "/var";
   expected = "/var";
-  count = cwk_path_normalize(input, result, sizeof(result));
+  count = cpj_path_normalize(input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }

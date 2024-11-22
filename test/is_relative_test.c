@@ -1,11 +1,11 @@
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdlib.h>
 
 int is_relative_relative_windows(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (!cwk_path_is_relative("..\\hello\\world.txt")) {
+  if (!cpj_path_is_relative("..\\hello\\world.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -14,9 +14,9 @@ int is_relative_relative_windows(void)
 
 int is_relative_relative_drive(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (!cwk_path_is_relative("C:test.txt")) {
+  if (!cpj_path_is_relative("C:test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -25,9 +25,9 @@ int is_relative_relative_drive(void)
 
 int is_relative_device_question_mark(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (cwk_path_is_relative("\\\\?\\mydevice\\test")) {
+  if (cpj_path_is_relative("\\\\?\\mydevice\\test")) {
     return EXIT_FAILURE;
   }
 
@@ -36,10 +36,10 @@ int is_relative_device_question_mark(void)
 
 int is_relative_device_dot(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
-  cwk_path_is_absolute("\\\\.\\mydevice\\test");
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
+  cpj_path_is_absolute("\\\\.\\mydevice\\test");
 
-  if (cwk_path_is_relative("\\\\.\\mydevice\\test")) {
+  if (cpj_path_is_relative("\\\\.\\mydevice\\test")) {
     return EXIT_FAILURE;
   }
 
@@ -48,9 +48,9 @@ int is_relative_device_dot(void)
 
 int is_relative_device_unc(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (cwk_path_is_relative("\\\\.\\UNC\\LOCALHOST\\c$\\temp\\test-file.txt")) {
+  if (cpj_path_is_relative("\\\\.\\UNC\\LOCALHOST\\c$\\temp\\test-file.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -59,9 +59,9 @@ int is_relative_device_unc(void)
 
 int is_relative_unc(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (cwk_path_is_relative("\\\\server\\folder\\data")) {
+  if (cpj_path_is_relative("\\\\server\\folder\\data")) {
     return EXIT_FAILURE;
   }
 
@@ -70,9 +70,9 @@ int is_relative_unc(void)
 
 int is_relative_absolute_drive(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (cwk_path_is_relative("C:\\test.txt")) {
+  if (cpj_path_is_relative("C:\\test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -81,9 +81,9 @@ int is_relative_absolute_drive(void)
 
 int is_relative_unix_drive(void)
 {
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  if (!cwk_path_is_relative("C:\\test.txt")) {
+  if (!cpj_path_is_relative("C:\\test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -92,9 +92,9 @@ int is_relative_unix_drive(void)
 
 int is_relative_unix_backslash(void)
 {
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  if (!cwk_path_is_relative("\\folder\\")) {
+  if (!cpj_path_is_relative("\\folder\\")) {
     return EXIT_FAILURE;
   }
 
@@ -103,9 +103,9 @@ int is_relative_unix_backslash(void)
 
 int is_relative_windows_slash(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (cwk_path_is_relative("/test.txt")) {
+  if (cpj_path_is_relative("/test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -114,9 +114,9 @@ int is_relative_windows_slash(void)
 
 int is_relative_windows_backslash(void)
 {
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (cwk_path_is_relative("\\test.txt")) {
+  if (cpj_path_is_relative("\\test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -125,9 +125,9 @@ int is_relative_windows_backslash(void)
 
 int is_relative_relative(void)
 {
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  if (!cwk_path_is_relative("test.txt")) {
+  if (!cpj_path_is_relative("test.txt")) {
     return EXIT_FAILURE;
   }
 
@@ -136,8 +136,8 @@ int is_relative_relative(void)
 
 int is_relative_absolute(void)
 {
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  if (cwk_path_is_relative("/test.txt")) {
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  if (cpj_path_is_relative("/test.txt")) {
     return EXIT_FAILURE;
   }
 

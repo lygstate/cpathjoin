@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_first_segment
+title: cpj_path_get_first_segment
 description: Gets the first segment of a path.
 ---
 
@@ -8,7 +8,7 @@ Gets the first segment of a path.
 
 ## Description
 ```c
-bool cwk_path_get_first_segment(const char *path, struct cwk_segment *segment);
+bool cpj_path_get_first_segment(const char *path, struct cpj_segment *segment);
 ```
 
 ## Description
@@ -23,16 +23,16 @@ Returns ``true`` if there is a segment or ``false`` if there is none.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 int main(int argc, char *argv[])
 {
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  if(!cwk_path_get_first_segment("/my/path.txt", &segment)) {
+  if(!cpj_path_get_first_segment("/my/path.txt", &segment)) {
     printf("Path doesn't have any segments.");
   }
 

@@ -15,3 +15,4 @@ AllowShortIfStatementsOnASingleLine: 'false'
 AllowShortLoopsOnASingleLine: false
 PenaltyBreakAssignment: 10000
 PenaltyBreakBeforeFirstCallParameter: 100000
+IndentExternBlock: NoIndent

@@ -1,10 +1,10 @@
 {
-  "name": "cwalk",
-  "repo": "likle/cwalk",
+  "name": "cpj",
+  "repo": "lygstate/cpathjoin",
   "version": "v1.2.9",
-  "decription": "libcwalk - path library for C/C++",
+  "decription": "libcpj - path join library for C/C++",
   "src": [
-    "src/cwalk.c",
-    "include/cwalk.h"
+    "src/cpj.c",
+    "include/cpj.h"
   ]
 }

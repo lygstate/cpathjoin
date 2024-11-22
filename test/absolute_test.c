@@ -1,4 +1,4 @@
-#include <cwalk.h>
+#include <cpj.h>
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,16 +14,16 @@ int absolute_check(void)
     "/./simple", "/.././simple"};
   size_t i;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   for (i = 0; i < ARRAY_SIZE(relative_paths); ++i) {
-    if (cwk_path_is_absolute(relative_paths[i])) {
+    if (cpj_path_is_absolute(relative_paths[i])) {
       return EXIT_FAILURE;
     }
   }
 
   for (i = 0; i < ARRAY_SIZE(absolute_paths); ++i) {
-    if (!cwk_path_is_absolute(absolute_paths[i])) {
+    if (!cpj_path_is_absolute(absolute_paths[i])) {
       return EXIT_FAILURE;
     }
   }
@@ -36,8 +36,8 @@ int absolute_too_far(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_get_absolute("/hello/there", "../../../../../", buffer,
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_get_absolute("/hello/there", "../../../../../", buffer,
     sizeof(buffer));
 
   if (length != 1) {
@@ -56,8 +56,8 @@ int absolute_normalization(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_get_absolute("/hello//../there", "test//thing", buffer,
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_get_absolute("/hello//../there", "test//thing", buffer,
     sizeof(buffer));
 
   if (length != 17) {
@@ -76,8 +76,8 @@ int absolute_mixed(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_get_absolute("hello/there", "/test", buffer,
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_get_absolute("hello/there", "/test", buffer,
     sizeof(buffer));
 
   if (length != 5) {
@@ -96,8 +96,8 @@ int absolute_unix_relative_base(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_get_absolute("hello/there", "test", buffer, sizeof(buffer));
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_get_absolute("hello/there", "test", buffer, sizeof(buffer));
 
   if (length != 17) {
     return EXIT_FAILURE;
@@ -115,8 +115,8 @@ int absolute_windows_relative_base(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
-  length = cwk_path_get_absolute("hello\\there", "test", buffer, sizeof(buffer));
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
+  length = cpj_path_get_absolute("hello\\there", "test", buffer, sizeof(buffer));
 
   if (length != 17) {
     return EXIT_FAILURE;
@@ -134,8 +134,8 @@ int absolute_absolute_path(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_get_absolute("/hello/there", "/test", buffer,
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_get_absolute("/hello/there", "/test", buffer,
     sizeof(buffer));
 
   if (length != 5) {
@@ -154,8 +154,8 @@ int absolute_simple(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_get_absolute("/hello/there", "..", buffer, sizeof(buffer));
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_get_absolute("/hello/there", "..", buffer, sizeof(buffer));
 
   if (length != 6) {
     return EXIT_FAILURE;
@@ -176,28 +176,28 @@ int absolute_buffer_reuse(void)
   memset(path, 1, FILENAME_MAX);
   path[0] = '\0';
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
-  cwk_path_get_absolute(path, "/", path, FILENAME_MAX);
+  cpj_path_get_absolute(path, "/", path, FILENAME_MAX);
   if (strcmp(path, "/") != 0) {
     return EXIT_FAILURE;
   }
-  cwk_path_get_absolute(path, "see", path, FILENAME_MAX);
+  cpj_path_get_absolute(path, "see", path, FILENAME_MAX);
   if (strcmp(path, "/see") != 0) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_get_absolute(path, "dog", path, FILENAME_MAX);
+  cpj_path_get_absolute(path, "dog", path, FILENAME_MAX);
   if (strcmp(path, "/see/dog") != 0) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_get_absolute(path, "..", path, FILENAME_MAX);
+  cpj_path_get_absolute(path, "..", path, FILENAME_MAX);
   if (strcmp(path, "/see") != 0) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_get_absolute(path, "cat", path, FILENAME_MAX);
+  cpj_path_get_absolute(path, "cat", path, FILENAME_MAX);
   if (strcmp(path, "/see/cat") != 0) {
     return EXIT_FAILURE;
   }

@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_last_segment
+title: cpj_path_get_last_segment
 description: Gets the last segment of the path.
 ---
 
@@ -8,7 +8,7 @@ Gets the last segment of the path.
 
 ## Description
 ```c
-bool cwk_path_get_last_segment(const char *path, struct cwk_segment *segment);
+bool cpj_path_get_last_segment(const char *path, struct cpj_segment *segment);
 ```
 
 This function gets the last segment of a path. This function may return false if the path doesn't contain any segments, in which case the submitted segment parameter is not modified. The position of the segment is set to the first character after the separator, and the length counts all characters until the end of the path (excluding the separator).
@@ -22,16 +22,16 @@ Returns ``true`` if there is a segment or ``false`` if there is none.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 int main(int argc, char *argv[])
 {
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  if(!cwk_path_get_last_segment("/my/test/path.txt", &segment)) {
+  if(!cpj_path_get_last_segment("/my/test/path.txt", &segment)) {
     printf("Path doesn't have any segments.");
   }
 

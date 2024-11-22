@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_relative
+title: cpj_path_get_relative
 description: Generates a relative path based on a base.
 ---
 
@@ -8,7 +8,7 @@ Generates a relative path based on a base.
 
 ## Description
 ```c
-size_t cwk_path_get_relative(const char *base_directory, const char *path,
+size_t cpj_path_get_relative(const char *base_directory, const char *path,
   char *buffer, size_t buffer_size);
 ```
 
@@ -41,7 +41,7 @@ Returns the total amount of characters of the full path.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 {
   char buffer[FILENAME_MAX];
   
-  cwk_path_get_relative("/hello/there/", "/hello/world", buffer, sizeof(buffer));
+  cpj_path_get_relative("/hello/there/", "/hello/world", buffer, sizeof(buffer));
   printf("The relative path is: %s", buffer);
 
   return EXIT_SUCCESS;

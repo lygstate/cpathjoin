@@ -7,9 +7,9 @@
 /**
  * This is just a small macro which calculates the size of an array.
  */
-#define CWK_ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define CPJ_ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
-struct cwk_test
+struct cpj_test
 {
   const char *unit_name;
   const char *test_name;
@@ -21,14 +21,14 @@ struct cwk_test
 UNIT_TESTS(XX)
 #undef XX
 
-static struct cwk_test tests[] = {
+static struct cpj_test tests[] = {
 #define XX(u, t)                                                               \
   {.unit_name = #u, .test_name = #t, .full_name = #u "/" #t, .fn = u##_##t},
   UNIT_TESTS(XX)
 #undef XX
 };
 
-static int call_test(struct cwk_test *test)
+static int call_test(struct cpj_test *test)
 {
   size_t i;
 
@@ -50,14 +50,14 @@ int main(int argc, char *argv[])
 {
   size_t i, count, failed, succeeded;
   const char *requested_unit_name, *requested_test_name;
-  struct cwk_test *test;
+  struct cpj_test *test;
   double rate;
 
   count = 0;
   failed = 0;
   if (argc < 2) {
     fputs("No unit specified. Running all tests.\n\n", stdout);
-    for (i = 0; i < CWK_ARRAY_SIZE(tests); ++i) {
+    for (i = 0; i < CPJ_ARRAY_SIZE(tests); ++i) {
       test = &tests[i];
       ++count;
       if (call_test(test) == EXIT_FAILURE) {
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   } else if (argc < 3) {
     requested_unit_name = argv[1];
     printf("Running all unit tests of '%s'.\n\n", requested_unit_name);
-    for (i = 0; i < CWK_ARRAY_SIZE(tests); ++i) {
+    for (i = 0; i < CPJ_ARRAY_SIZE(tests); ++i) {
       test = &tests[i];
       if (strcmp(test->unit_name, requested_unit_name) == 0) {
         ++count;
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
     requested_test_name = argv[2];
     printf("Running a single test '%s/%s'.\n\n", requested_unit_name,
       requested_test_name);
-    for (i = 0; i < CWK_ARRAY_SIZE(tests); ++i) {
+    for (i = 0; i < CPJ_ARRAY_SIZE(tests); ++i) {
       test = &tests[i];
       if (strcmp(test->unit_name, requested_unit_name) == 0 &&
           strcmp(test->test_name, requested_test_name) == 0) {

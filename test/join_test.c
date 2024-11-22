@@ -1,4 +1,4 @@
-#include <cwalk.h>
+#include <cpj.h>
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,13 +10,13 @@ int join_multiple(void)
   const char *paths[3];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   paths[0] = "hello/there";
   paths[1] = "../world";
   paths[2] = NULL;
 
-  length = cwk_path_join_multiple(paths, buffer, sizeof(buffer));
+  length = cpj_path_join_multiple(paths, buffer, sizeof(buffer));
 
   if (length != 11) {
     return EXIT_FAILURE;
@@ -34,8 +34,8 @@ int join_relative_back_after_root(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
-  length = cwk_path_join("this\\", "C:\\..\\..\\is\\a\\test\\", buffer,
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
+  length = cpj_path_join("this\\", "C:\\..\\..\\is\\a\\test\\", buffer,
     sizeof(buffer));
 
   if (length != 9) {
@@ -54,8 +54,8 @@ int join_back_after_root(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
-  length = cwk_path_join("C:\\this\\path", "C:\\..\\is\\a\\test\\", buffer,
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
+  length = cpj_path_join("C:\\this\\path", "C:\\..\\is\\a\\test\\", buffer,
     sizeof(buffer));
 
   if (length != 22) {
@@ -74,8 +74,8 @@ int join_with_two_roots(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
-  length = cwk_path_join("C:\\this\\path", "C:\\is\\a\\test\\", buffer,
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
+  length = cpj_path_join("C:\\this\\path", "C:\\is\\a\\test\\", buffer,
     sizeof(buffer));
 
   if (length != 25) {
@@ -94,8 +94,8 @@ int join_two_unc(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
-  length = cwk_path_join("\\\\server\\unc\\path", "\\\\server2\\unc\\path",
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
+  length = cpj_path_join("\\\\server\\unc\\path", "\\\\server2\\unc\\path",
     buffer, sizeof(buffer));
 
   if (length != 34) {
@@ -114,8 +114,8 @@ int join_two_absolute(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_join("/first", "/second", buffer, sizeof(buffer));
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_join("/first", "/second", buffer, sizeof(buffer));
 
   if (length != 13) {
     return EXIT_FAILURE;
@@ -133,8 +133,8 @@ int join_empty(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_join("hello", "..", buffer, sizeof(buffer));
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_join("hello", "..", buffer, sizeof(buffer));
 
   if (length != 1) {
     return EXIT_FAILURE;
@@ -152,8 +152,8 @@ int join_navigate_back(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_join("hello/there", "..", buffer, sizeof(buffer));
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_join("hello/there", "..", buffer, sizeof(buffer));
 
   if (length != 5) {
     return EXIT_FAILURE;
@@ -171,8 +171,8 @@ int join_simple(void)
   char buffer[FILENAME_MAX];
   size_t length;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
-  length = cwk_path_join("hello", "there", buffer, sizeof(buffer));
+  cpj_path_set_style(CPJ_STYLE_UNIX);
+  length = cpj_path_join("hello", "there", buffer, sizeof(buffer));
 
   if (length != 11) {
     return EXIT_FAILURE;

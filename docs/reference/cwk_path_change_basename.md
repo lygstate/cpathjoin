@@ -1,5 +1,5 @@
 ---
-title: cwk_path_change_basename
+title: cpj_path_change_basename
 description: Changes the basename of a file path.
 ---
 
@@ -8,7 +8,7 @@ Changes the basename of a file path.
 
 ## Description
 ```c
-size_t cwk_path_change_basename(const char *path, const char *new_basename,
+size_t cpj_path_change_basename(const char *path, const char *new_basename,
   char *buffer, size_t buffer_size);
 ```
 
@@ -20,7 +20,7 @@ have, even if it was not written out completely. The path may be the same
 memory address as the buffer.
 
 **Note:** This function does not normalize the resulting path. You can use 
-**[cwk_path_normalize]({{ site.baseurl }}{% link reference/cwk_path_normalize.md %})**
+**[cpj_path_normalize]({{ site.baseurl }}{% link reference/cpj_path_normalize.md %})**
 to do so. Separators before and after the submitted basename will be trimmed, 
 but not removed from the source path. The value may contain separators which 
 will introduce new segments. If the submitted path does not have any segments, 
@@ -37,7 +37,7 @@ Returns the size which the complete new path would have if it was not truncated.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -46,9 +46,9 @@ int main(int argc, char *argv[])
 {
   char buffer[FILENAME_MAX];
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  cwk_path_change_basename("C:\\test.txt", "another.txt", buffer,
+  cpj_path_change_basename("C:\\test.txt", "another.txt", buffer,
     sizeof(buffer));
 
   printf("The new path: '%s'", buffer);

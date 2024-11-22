@@ -1,5 +1,5 @@
 ---
-title: cwk_path_is_absolute
+title: cpj_path_is_absolute
 description: Determine whether the path is absolute or not.
 ---
 
@@ -8,7 +8,7 @@ Determine whether the path is absolute or not.
 
 ## Description
 ```c
-bool cwk_path_is_absolute(const char *path);
+bool cpj_path_is_absolute(const char *path);
 ```
 This function checks whether the path is an absolute (fully qualified) path or not. A path is considered to be absolute if the root ends with a separator.
 
@@ -37,14 +37,14 @@ Returns ``true`` if the path is absolute or ``false`` otherwise.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 int main(int argc, char *argv[])
 {
-  if(cwk_path_is_absolute("/my/path.txt")) {
+  if(cpj_path_is_absolute("/my/path.txt")) {
     printf("The root is absolute.");
   } else {
     printf("The root is relative.");

@@ -1,4 +1,4 @@
-#include <cwalk.h>
+#include <cpj.h>
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,19 +7,19 @@
 int segment_change_overlap(void)
 {
   char buffer[FILENAME_MAX] = "C:\\this\\cool\\path\\";
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
-  if (!cwk_path_get_first_segment(buffer, &segment)) {
+  if (!cpj_path_get_first_segment(buffer, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "longer_segment", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "longer_segment", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\longer_segment\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -32,20 +32,20 @@ int segment_change_with_separator(void)
 {
   const char *path;
   char buffer[FILENAME_MAX];
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\this\\cool\\path\\";
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "other\\fancy", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "other\\fancy", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\other\\fancy\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -58,20 +58,20 @@ int segment_change_empty(void)
 {
   const char *path;
   char buffer[FILENAME_MAX];
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\this\\cool\\path\\";
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -84,20 +84,20 @@ int segment_change_trim(void)
 {
   const char *path;
   char buffer[FILENAME_MAX];
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\this\\cool\\path\\";
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "//other/\\\\", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "//other/\\\\", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\other\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -110,27 +110,27 @@ int segment_change_last(void)
 {
   const char *path;
   char buffer[FILENAME_MAX];
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\this\\cool\\path\\";
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\cool\\other\\") != 0) {
     return EXIT_FAILURE;
   }
 
   path = "C:\\this\\cool\\path";
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\cool\\other") != 0) {
     return EXIT_FAILURE;
@@ -143,27 +143,27 @@ int segment_change_first(void)
 {
   const char *path;
   char buffer[FILENAME_MAX];
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\this\\cool\\path\\";
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\other\\cool\\path\\") != 0) {
     return EXIT_FAILURE;
   }
 
   path = "this\\cool\\path\\";
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "other\\cool\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -176,20 +176,20 @@ int segment_change_simple(void)
 {
   const char *path;
   char buffer[FILENAME_MAX];
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\this\\cool\\path\\";
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
 
   if (strcmp(buffer, "C:\\this\\other\\path\\") != 0) {
     return EXIT_FAILURE;
@@ -201,12 +201,12 @@ int segment_change_simple(void)
 int segment_back_with_root(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\this\\path";
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -214,7 +214,7 @@ int segment_back_with_root(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -222,7 +222,7 @@ int segment_back_with_root(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -232,49 +232,49 @@ int segment_back_with_root(void)
 int segment_type(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "/a/./../.folder/..folder";
 
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_segment_type(&segment) != CWK_NORMAL) {
+  if (cpj_path_get_segment_type(&segment) != CPJ_NORMAL) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_segment_type(&segment) != CWK_CURRENT) {
+  if (cpj_path_get_segment_type(&segment) != CPJ_CURRENT) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_segment_type(&segment) != CWK_BACK) {
+  if (cpj_path_get_segment_type(&segment) != CPJ_BACK) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_segment_type(&segment) != CWK_NORMAL) {
+  if (cpj_path_get_segment_type(&segment) != CPJ_NORMAL) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_segment_type(&segment) != CWK_NORMAL) {
+  if (cpj_path_get_segment_type(&segment) != CPJ_NORMAL) {
     return EXIT_FAILURE;
   }
 
@@ -284,29 +284,29 @@ int segment_type(void)
 int segment_previous_too_far_root(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "//now/hello_world/abc/";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -316,29 +316,29 @@ int segment_previous_too_far_root(void)
 int segment_previous_too_far(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "//now/hello_world/abc/";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -348,13 +348,13 @@ int segment_previous_too_far(void)
 int segment_previous_relative(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "now/hello_world/abc/";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -362,7 +362,7 @@ int segment_previous_relative(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -370,7 +370,7 @@ int segment_previous_relative(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -378,7 +378,7 @@ int segment_previous_relative(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -388,13 +388,13 @@ int segment_previous_relative(void)
 int segment_previous_absolute(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "/now/hello_world/abc/";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -402,7 +402,7 @@ int segment_previous_absolute(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -410,7 +410,7 @@ int segment_previous_absolute(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -418,7 +418,7 @@ int segment_previous_absolute(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -428,13 +428,13 @@ int segment_previous_absolute(void)
 int segment_previous_relative_one_char_first(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "n/hello_world/abc/";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -442,7 +442,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -450,7 +450,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -458,15 +458,15 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
   
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "t\\cool\\path\\";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -474,7 +474,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -482,7 +482,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -490,7 +490,7 @@ int segment_previous_relative_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -500,13 +500,13 @@ int segment_previous_relative_one_char_first(void)
 int segment_previous_absolute_one_char_first(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "/n/hello_world/abc/";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -514,7 +514,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -522,7 +522,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -530,15 +530,15 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
   
-  cwk_path_set_style(CWK_STYLE_WINDOWS);
+  cpj_path_set_style(CPJ_STYLE_WINDOWS);
 
   path = "C:\\t\\cool\\path\\";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -546,7 +546,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -554,7 +554,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_previous_segment(&segment)) {
+  if (!cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -562,7 +562,7 @@ int segment_previous_absolute_one_char_first(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_previous_segment(&segment)) {
+  if (cpj_path_get_previous_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -572,25 +572,25 @@ int segment_previous_absolute_one_char_first(void)
 int segment_next_too_far(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "/hello_world/abc/";
 
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_next_segment(&segment)) {
+  if (cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_next_segment(&segment)) {
+  if (cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -600,13 +600,13 @@ int segment_next_too_far(void)
 int segment_next(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "/hello_world/abc/";
 
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -614,7 +614,7 @@ int segment_next(void)
     return EXIT_FAILURE;
   }
 
-  if (!cwk_path_get_next_segment(&segment)) {
+  if (!cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -622,7 +622,7 @@ int segment_next(void)
     return EXIT_FAILURE;
   }
 
-  if (cwk_path_get_next_segment(&segment)) {
+  if (cpj_path_get_next_segment(&segment)) {
     return EXIT_FAILURE;
   }
 
@@ -632,13 +632,13 @@ int segment_next(void)
 int segment_last(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "/hello_world/abc";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -648,7 +648,7 @@ int segment_last(void)
 
   path = "hello_world/abc";
 
-  if (!cwk_path_get_last_segment(path, &segment)) {
+  if (!cpj_path_get_last_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -662,13 +662,13 @@ int segment_last(void)
 int segment_first(void)
 {
   const char *path;
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
-  cwk_path_set_style(CWK_STYLE_UNIX);
+  cpj_path_set_style(CPJ_STYLE_UNIX);
 
   path = "/hello_world/abc";
 
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
@@ -678,7 +678,7 @@ int segment_first(void)
 
   path = "hello_world/abc";
 
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 

@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_dirname
+title: cpj_path_get_dirname
 description: Gets the dirname of a file path.
 ---
 
@@ -8,7 +8,7 @@ Gets the dirname of a file path.
 
 ## Description
 ```c
-void cwk_path_get_dirname(const char *path, size_t *length);
+void cpj_path_get_dirname(const char *path, size_t *length);
 ```
 
 This function determines the dirname of a file path and returns the length up to which character is considered to be part of it. The dirname is the part of the path up to the last segment. For instance, `/var/` is the dirname of `/var/logs`. If no dirname is found, the length will be set to zero. The beginning of the dirname is always equal to the submitted path pointer.
@@ -34,7 +34,7 @@ This function determines the dirname of a file path and returns the length up to
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   size_t length;
 
   path = "/my/path.txt";
-  cwk_path_get_dirname(path, &length);
+  cpj_path_get_dirname(path, &length);
   printf("The dirname is: '%.*s'", length, path);
 
   return EXIT_SUCCESS;

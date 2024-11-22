@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_absolute
+title: cpj_path_get_absolute
 description: Generates an absolute path based on a base.
 ---
 
@@ -8,7 +8,7 @@ Generates an absolute path based on a base.
 
 ## Description
 ```c
-size_t cwk_path_get_absolute(const char *base, const char *path, char *buffer,
+size_t cpj_path_get_absolute(const char *base, const char *path, char *buffer,
   size_t buffer_size);
 ```
 
@@ -36,7 +36,7 @@ Returns the total amount of characters of the new absolute path.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 {
   char buffer[FILENAME_MAX];
   
-  cwk_path_get_absolute("/hello/there", "./world", buffer, sizeof(buffer));
+  cpj_path_get_absolute("/hello/there", "./world", buffer, sizeof(buffer));
   printf("The absolute path is: %s", buffer);
 
   return EXIT_SUCCESS;

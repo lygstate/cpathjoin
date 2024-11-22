@@ -1,5 +1,5 @@
 ---
-title: cwk_path_join_multiple
+title: cpj_path_join_multiple
 description: Joins multiple paths together.
 ---
 
@@ -8,10 +8,10 @@ Joins multiple paths together.
 
 ## Description
 ```c
-size_t cwk_path_join_multiple(const char **paths, char *buffer,
+size_t cpj_path_join_multiple(const char **paths, char *buffer,
   size_t buffer_size);
 ```
-This function generates a new path by joining multiple paths together. It will remove double separators, and unlike [cwk_path_get_absolute]({{ site.baseurl }}{% link reference/cwk_path_get_absolute.md %}) it permits the use of multiple relative paths to combine. The last path of the submitted string array must be set to NULL. The result will be written to a buffer, which might be truncated if the buffer is not large enough to hold the full path. However, the truncated result will always be null-terminated. The returned value is the amount of characters which the resulting path would take if it was not truncated (excluding the null-terminating character).
+This function generates a new path by joining multiple paths together. It will remove double separators, and unlike [cpj_path_get_absolute]({{ site.baseurl }}{% link reference/cpj_path_get_absolute.md %}) it permits the use of multiple relative paths to combine. The last path of the submitted string array must be set to NULL. The result will be written to a buffer, which might be truncated if the buffer is not large enough to hold the full path. However, the truncated result will always be null-terminated. The returned value is the amount of characters which the resulting path would take if it was not truncated (excluding the null-terminating character).
 
 ## Parameters
  * **paths**: An array of paths which will be joined.
@@ -22,11 +22,11 @@ This function generates a new path by joining multiple paths together. It will r
 Returns the total amount of characters of the full, combined path.
 
 ## Outcomes
-See [cwk_path_join]({{ site.baseurl }}{% link reference/cwk_path_join.md %}) for examples how paths are joined together.
+See [cpj_path_join]({{ site.baseurl }}{% link reference/cpj_path_join.md %}) for examples how paths are joined together.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   paths[0] = "hello/there";
   paths[1] = "../world";
   paths[2] = NULL;
-  cwk_path_join_multiple(paths, buffer, sizeof(buffer));
+  cpj_path_join_multiple(paths, buffer, sizeof(buffer));
   printf("The combined path is: %s", buffer);
 
   return EXIT_SUCCESS;

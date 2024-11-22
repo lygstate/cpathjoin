@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.9.2)
 
 # set project name
-project(cwalk
+project(cpj
   VERSION 1.2.9
   DESCRIPTION "A simple path library"
-  HOMEPAGE_URL "https://likle.github.io/cwalk/"
+  HOMEPAGE_URL "https://likle.github.io/cpj/"
   LANGUAGES C)
 
 # include utilities
@@ -38,20 +38,20 @@ if(ENABLE_SANITIZER)
 endif()
 
 # add the main executable
-add_library(cwalk
-  "${INCLUDE_DIRECTORY}/cwalk.h"
-  "${SOURCE_DIRECTORY}/cwalk.c")
-enable_warnings(cwalk)
-target_include_directories(cwalk PUBLIC
+add_library(cpj
+  "${INCLUDE_DIRECTORY}/cpj.h"
+  "${SOURCE_DIRECTORY}/cpj.c")
+enable_warnings(cpj)
+target_include_directories(cpj PUBLIC
   $<BUILD_INTERFACE:${INCLUDE_DIRECTORY}>
   $<INSTALL_INTERFACE:include>
 )
-set_target_properties(cwalk PROPERTIES PUBLIC_HEADER "${INCLUDE_DIRECTORY}/cwalk.h")
-set_target_properties(cwalk PROPERTIES DEFINE_SYMBOL CWK_EXPORTS)
+set_target_properties(cpj PROPERTIES PUBLIC_HEADER "${INCLUDE_DIRECTORY}/cpj.h")
+set_target_properties(cpj PROPERTIES DEFINE_SYMBOL CPJ_EXPORTS)
 
 # add shared library macro
 if(BUILD_SHARED_LIBS)
-  target_compile_definitions(cwalk PUBLIC CWK_SHARED)
+  target_compile_definitions(cpj PUBLIC CPJ_SHARED)
 endif()
 
 # enable tests
@@ -59,7 +59,7 @@ if(ENABLE_TESTS)
   message("-- Tests enabled")
   enable_testing()
 
-  create_test_list(DEFAULT cwalktest)
+  create_test_list(DEFAULT cpjtest)
   create_test(DEFAULT absolute simple)
   create_test(DEFAULT absolute absolute_path)
   create_test(DEFAULT absolute unix_relative_base)
@@ -242,7 +242,7 @@ if(ENABLE_TESTS)
   create_test(DEFAULT windows root_empty)
   write_test_file(DEFAULT "${TEST_DIRECTORY}/tests.h")
 
-  add_executable(cwalktest
+  add_executable(cpjtest
     "${TEST_DIRECTORY}/main.c"
     "${TEST_DIRECTORY}/absolute_test.c"
     "${TEST_DIRECTORY}/basename_test.c"
@@ -258,28 +258,28 @@ if(ENABLE_TESTS)
     "${TEST_DIRECTORY}/root_test.c"
     "${TEST_DIRECTORY}/segment_test.c"
     "${TEST_DIRECTORY}/windows_test.c")
-  enable_warnings(cwalktest)
+  enable_warnings(cpjtest)
 
-  target_link_libraries(cwalktest PRIVATE cwalk)
+  target_link_libraries(cpjtest PRIVATE cpj)
 endif()
 
-write_basic_package_version_file("CwalkConfigVersion.cmake"
-  VERSION ${cwalk_VERSION}
+write_basic_package_version_file("CpjConfigVersion.cmake"
+  VERSION ${cpj_VERSION}
   COMPATIBILITY SameMajorVersion)
 
-configure_file(cwalk.pc.in ${PROJECT_BINARY_DIR}/cwalk.pc @ONLY)
+configure_file(cpj.pc.in ${PROJECT_BINARY_DIR}/cpj.pc @ONLY)
 
-install(TARGETS cwalk
-  EXPORT CwalkTargets)
-
-install(FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CwalkConfig.cmake"
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cwalk)
+install(TARGETS cpj
+  EXPORT CpjTargets)
 
 install(FILES
-  ${PROJECT_BINARY_DIR}/cwalk.pc
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CpjConfig.cmake"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cpj)
+
+install(FILES
+  ${PROJECT_BINARY_DIR}/cpj.pc
   DESTINATION lib/pkgconfig/)
 
-install(EXPORT CwalkTargets
-  FILE CwalkTargets.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cwalk)
+install(EXPORT CpjTargets
+  FILE CpjTargets.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cpj)

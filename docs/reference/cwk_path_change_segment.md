@@ -1,5 +1,5 @@
 ---
-title: cwk_path_change_segment
+title: cpj_path_change_segment
 description: Changes the content of a segment.
 ---
 
@@ -8,7 +8,7 @@ Changes the content of a segment.
 
 ## Description
 ```c
-size_t cwk_path_change_segment(struct cwk_segment *segment, const char *value,
+size_t cpj_path_change_segment(struct cpj_segment *segment, const char *value,
   char *buffer, size_t buffer_size);
 ```
 
@@ -20,7 +20,7 @@ submitted buffer size, but it is always null-terminated. The source of the
 segment and the submitted buffer may be the same.
 
 **Note:** This function does not normalize the resulting path. You can use 
-**[cwk_path_normalize]({{ site.baseurl }}{% link reference/cwk_path_normalize.md %})**
+**[cpj_path_normalize]({{ site.baseurl }}{% link reference/cpj_path_normalize.md %})**
 to do so. Separators before and after the value will be trimmed. The value may 
 contain separators which will introduce new segments.
 
@@ -36,7 +36,7 @@ truncated.
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -45,14 +45,14 @@ int main(int argc, char *argv[])
 {
   const char *path;
   char buffer[FILENAME_MAX];
-  struct cwk_segment segment;
+  struct cpj_segment segment;
 
   path = "/this/cool/path/";
-  if (!cwk_path_get_first_segment(path, &segment)) {
+  if (!cpj_path_get_first_segment(path, &segment)) {
     return EXIT_FAILURE;
   }
 
-  cwk_path_change_segment(&segment, "other", buffer, sizeof(buffer));
+  cpj_path_change_segment(&segment, "other", buffer, sizeof(buffer));
 
   printf("The new path: '%s'", buffer);
 

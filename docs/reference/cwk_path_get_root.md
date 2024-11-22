@@ -1,5 +1,5 @@
 ---
-title: cwk_path_get_root
+title: cpj_path_get_root
 description: Determines the root of a path.
 ---
 
@@ -8,7 +8,7 @@ Determines the root of a path.
 
 ## Description
 ```c
-void cwk_path_get_root(const char *path, size_t *length);
+void cpj_path_get_root(const char *path, size_t *length);
 ```
 This function determines the root of a path by finding it's length.  The root comes before the first segment of the path. For example, ``C:\`` is the root of ``C:\folder\file.txt``. It always starts at the submitted path. If the path has no root, the length will be set to zero.
 
@@ -36,11 +36,11 @@ This function determines the root of a path by finding it's length.  The root co
 ### Note
 The style is automatically chosen during compile time, which is 
 UNIX for macOS and linux and WINDOWS for windows. You can change the style
-using [cwk_path_set_style]({{ site.baseurl }}{% link reference/cwk_path_set_style.md %}).
+using [cpj_path_set_style]({{ site.baseurl }}{% link reference/cpj_path_set_style.md %}).
 
 ## Example
 ```c
-#include <cwalk.h>
+#include <cpj.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   size_t length;
 
   path = "/my/path.txt";
-  cwk_path_get_root(path, &length);
+  cpj_path_get_root(path, &length);
   printf("The root is: '%.*s'", length, path);
 
   return EXIT_SUCCESS;
