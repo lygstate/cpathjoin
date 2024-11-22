@@ -2,7 +2,7 @@
 function(enable_warnings target)
   if(MSVC)
     target_compile_definitions(${target} PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_options(${target} PRIVATE /W4)
+    target_compile_options(${target} PRIVATE /W3)
     if (NOT IGNORE_WARNINGS)
       target_compile_options(${target} PRIVATE /WX)
     endif()
