@@ -57,6 +57,24 @@ int normalize_only_separators(void)
   return EXIT_SUCCESS;
 }
 
+int normalize_zero_length(void)
+{
+  size_t count;
+  char result[FILENAME_MAX];
+  char *input, *expected;
+
+  input = "";
+  strcpy(result, input);
+  expected = "";
+  count = cpj_path_normalize(CPJ_STYLE_UNIX, result, result, sizeof(result));
+  if (count != strlen(expected) || strcmp(result, expected) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
+
 int normalize_empty(void)
 {
   size_t count;
