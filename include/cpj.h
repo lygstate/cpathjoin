@@ -142,6 +142,29 @@ CPJ_PUBLIC size_t cpj_path_join(enum cpj_path_style path_style,
   const char *path_a, const char *path_b, char *buffer, size_t buffer_size);
 
 /**
+ * @brief Joins two paths together.
+ *
+ * This function generates a new path by combining the two submitted paths. It
+ * will remove double separators, and unlike cpj_path_get_absolute it permits
+ * the use of two relative paths to combine. The result will be written to a
+ * buffer, which might be truncated if the buffer is not large enough to hold
+ * the full path. However, the truncated result will always be
+ * null-terminated. The returned value is the amount of characters which the
+ * resulting path would take if it was not truncated (excluding the
+ * null-terminating character).
+ *
+ * @param path_style Style depending on the operating system. So this should
+ * detect whether we should use windows or unix paths.
+ * @param path_a The first path which comes first.
+ * @param path_b The second path which comes after the first.
+ * @param buffer The buffer where the result will be written to.
+ * @param buffer_size The size of the result buffer.
+ * @return Returns the total amount of characters of the full, combined path.
+ */
+CPJ_PUBLIC size_t cpj_path_join_module(enum cpj_path_style path_style,
+  const char *path_a, const char *path_b, char *buffer, size_t buffer_size);
+
+/**
  * @brief Joins multiple paths together.
  *
  * This function generates a new path by joining multiple paths together. It

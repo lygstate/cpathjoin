@@ -46,6 +46,25 @@ int join_relative_back_after_root(void)
   return EXIT_SUCCESS;
 }
 
+int join_relative_back_after_root_module(void)
+{
+  char buffer[FILENAME_MAX];
+  size_t length;
+
+  length = cpj_path_join_module(CPJ_STYLE_WINDOWS, "this\\", "C:\\..\\..\\is\\a\\test\\", buffer,
+    sizeof(buffer));
+
+  if (length != 12) {
+    return EXIT_FAILURE;
+  }
+
+  if (strcmp(buffer, "C:\\is\\a\\test") != 0) {
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
 int join_back_after_root(void)
 {
   char buffer[FILENAME_MAX];
@@ -115,6 +134,24 @@ int join_two_absolute(void)
   }
 
   if (strcmp(buffer, "/first/second") != 0) {
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
+int join_two_absolute_module(void)
+{
+  char buffer[FILENAME_MAX];
+  size_t length;
+
+  length = cpj_path_join_module(CPJ_STYLE_UNIX, "/first", "/second", buffer, sizeof(buffer));
+
+  if (length != 7) {
+    return EXIT_FAILURE;
+  }
+
+  if (strcmp(buffer, "/second") != 0) {
     return EXIT_FAILURE;
   }
 

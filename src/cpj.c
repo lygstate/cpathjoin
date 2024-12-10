@@ -2,7 +2,493 @@
 #include <cpj.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
+
+typedef uint8_t jerry_char_t;
+typedef uint32_t jerry_size_t;
+
+#ifdef _MSC_VER
+
+/*
+ * Compiler-specific macros relevant for Microsoft Visual C/C++ Compiler.
+ */
+#define JERRY_ATTR_DEPRECATED __declspec(deprecated)
+#define JERRY_ATTR_NOINLINE __declspec(noinline)
+#define JERRY_ATTR_NORETURN __declspec(noreturn)
+
+/*
+ * Microsoft Visual C/C++ Compiler doesn't support for VLA, using _alloca
+ * instead.
+ */
+void *__cdecl _alloca(size_t _Size);
+#define JERRY_VLA(type, name, size)                                            \
+  type *name = (type *)(_alloca(sizeof(type) * (size)))
+
+#endif /* _MSC_VER */
+
+/**
+ * Helper to declare (or mimic) a C99 variable-length array.
+ */
+#ifndef JERRY_VLA
+#define JERRY_VLA(type, name, size) type name[size]
+#endif /* !JERRY_VLA */
+
+/**
+ * Description of a JerryScript string for arguments passing
+ */
+typedef struct
+{
+  const jerry_char_t
+    *ptr; /**< pointer to the zero-terminated ASCII/UTF-8/CESU-8 string */
+  jerry_size_t size; /**< size of the string, excluding '\0' terminator */
+} jerry_string_t;
+
+/**
+ * The path style of the OS
+ */
+typedef enum
+{
+  JERRY_PATH_STYLE_WINDOWS,
+  JERRY_PATH_STYLE_POSIX,
+} jerry_path_style_t;
+
+static bool jerry_module_path_is_separator(jerry_path_style_t style,
+  const jerry_char_t ch)
+{
+  if (style == JERRY_PATH_STYLE_WINDOWS) {
+    return ch == '/' || ch == '\\';
+  } else {
+    return ch == '/';
+  }
+}
+
+static const jerry_char_t *
+jerry_module_path_find_next_stop(jerry_path_style_t path_style,
+  const jerry_char_t *c)
+{
+  // We just move forward until we find a '\0' or a separator, which will be our
+  // next "stop".
+  while (*c != '\0' && !jerry_module_path_is_separator(path_style, *c)) {
+    ++c;
+  }
+
+  // Return the pointer of the next stop.
+  return c;
+}
+
+static void jerry_module_path_get_root_windows(const jerry_char_t *path,
+  jerry_size_t *length)
+{
+  const jerry_char_t *c;
+  bool is_device_path;
+
+  // We can not determine the root if this is an empty string. So we set the
+  // root to NULL and the length to zero and cancel the whole thing.
+  c = path;
+  *length = 0;
+  if (!*c) {
+    return;
+  }
+
+  // Now we have to verify whether this is a windows network path (UNC), which
+  // we will consider our root.
+  if (jerry_module_path_is_separator(JERRY_PATH_STYLE_WINDOWS, *c)) {
+    ++c;
+
+    // Check whether the path starts with a single backslash, which means this
+    // is not a network path - just a normal path starting with a backslash.
+    if (!jerry_module_path_is_separator(JERRY_PATH_STYLE_WINDOWS, *c)) {
+      // Okay, this is not a network path but we still use the backslash as a
+      // root.
+      ++(*length);
+      return;
+    }
+
+    // A device path is a path which starts with "\\." or "\\?". A device path
+    // can be a UNC path as well, in which case it will take up one more
+    // segment. So, this is a network or device path. Skip the previous
+    // separator. Now we need to determine whether this is a device path. We
+    // might advance one character here if the server name starts with a '?' or
+    // a '.', but that's fine since we will search for a separator afterwards
+    // anyway.
+    ++c;
+    is_device_path = (*c == '?' || *c == '.') &&
+                     jerry_module_path_is_separator(JERRY_PATH_STYLE_WINDOWS,
+                       *(++c));
+    if (is_device_path) {
+      // That's a device path, and the root must be either "\\.\" or "\\?\"
+      // which is 4 characters long. (at least that's how Windows
+      // GetFullPathName behaves.)
+      *length = 4;
+      return;
+    }
+
+    // We will grab anything up to the next stop. The next stop might be a '\0'
+    // or another separator. That will be the server name.
+    c = jerry_module_path_find_next_stop(JERRY_PATH_STYLE_WINDOWS, c);
+
+    // If this is a separator and not the end of a string we wil have to include
+    // it. However, if this is a '\0' we must not skip it.
+    while (jerry_module_path_is_separator(JERRY_PATH_STYLE_WINDOWS, *c)) {
+      ++c;
+    }
+
+    // We are now skipping the shared folder name, which will end after the
+    // next stop.
+    c = jerry_module_path_find_next_stop(JERRY_PATH_STYLE_WINDOWS, c);
+
+    // Then there might be a separator at the end. We will include that as well,
+    // it will mark the path as absolute.
+    if (jerry_module_path_is_separator(JERRY_PATH_STYLE_WINDOWS, *c)) {
+      ++c;
+    }
+
+    // Finally, calculate the size of the root.
+    *length = (jerry_size_t)(c - path);
+    return;
+  }
+
+  // Move to the next and check whether this is a colon.
+  if (*++c == ':') {
+    *length = 2;
+
+    // Now check whether this is a backslash (or slash). If it is not, we could
+    // assume that the next character is a '\0' if it is a valid path. However,
+    // we will not assume that - since ':' is not valid in a path it must be a
+    // mistake by the caller than. We will try to understand it anyway.
+    if (jerry_module_path_is_separator(JERRY_PATH_STYLE_WINDOWS, *(++c))) {
+      *length = 3;
+    }
+  }
+}
+
+static void jerry_module_path_get_root_unix(const jerry_char_t *path,
+  jerry_size_t *length)
+{
+  // The slash of the unix path represents the root. There is no root if there
+  // is no slash.
+  if (jerry_module_path_is_separator(JERRY_PATH_STYLE_POSIX, *path)) {
+    *length = 1;
+  } else {
+    *length = 0;
+  }
+}
+
+static bool jerry_module_path_is_root_absolute(jerry_path_style_t path_style,
+  const jerry_char_t *path, size_t length)
+{
+  // This is definitely not absolute if there is no root.
+  if (length == 0) {
+    return false;
+  }
+
+  // If there is a separator at the end of the root, we can safely consider this
+  // to be an absolute path.
+  return jerry_module_path_is_separator(path_style, path[length - 1]);
+}
+
+void jerry_module_path_get_root(jerry_path_style_t path_style,
+  const jerry_char_t *path, jerry_size_t *length)
+{
+  // We use a different implementation here based on the configuration of the
+  // library.
+  if (path_style == JERRY_PATH_STYLE_WINDOWS) {
+    jerry_module_path_get_root_windows(path, length);
+  } else {
+    jerry_module_path_get_root_unix(path, length);
+  }
+}
+
+bool jerry_module_path_is_absolute(jerry_path_style_t path_style,
+  const jerry_char_t *path)
+{
+  jerry_size_t length;
+
+  // We grab the root of the path. This root does not include the first
+  // separator of a path.
+  jerry_module_path_get_root(path_style, path, &length);
+
+  // Now we can determine whether the root is absolute or not.
+  return jerry_module_path_is_root_absolute(path_style, path, length);
+}
+
+typedef enum
+{
+  JERRY_PATH_JOIN_ITERATOR_STATE_ONE_DOT,
+  JERRY_PATH_JOIN_ITERATOR_STATE_TWO_DOT,
+  JERRY_PATH_JOIN_ITERATOR_STATE_SEPARATOR,
+  JERRY_PATH_JOIN_ITERATOR_STATE_SEGMENT,
+  JERRY_PATH_JOIN_ITERATOR_STATE_ROOT,
+} jerry_path_iterator_state_t;
+
+typedef struct
+{
+  jerry_path_style_t style;
+  jerry_char_t *buffer_p;
+  jerry_size_t buffer_size;
+  jerry_size_t buffer_index;
+  jerry_size_t buffer_index_init;
+  jerry_size_t path_size_calculated;
+  jerry_size_t segment_length;
+
+  const jerry_string_t *path_list_p;
+  jerry_size_t path_list_count;
+  jerry_size_t path_total_size;
+
+  jerry_size_t segment_eat_count;
+  jerry_path_iterator_state_t iterator_state;
+  bool only_first_path_is_root;
+} jerry_path_join_state_t;
+
+typedef struct
+{
+  int32_t list_pos;
+  jerry_size_t item_pos;
+  jerry_size_t root_length;
+} jerry_path_iterator_t;
+
+jerry_char_t jerry_module_path_get_char(jerry_path_join_state_t *state,
+  jerry_path_iterator_t *it)
+{
+  if (it->list_pos < 0) {
+    return 0;
+  }
+  if (it->item_pos == state->path_list_p[it->list_pos].size) {
+    return '/';
+  }
+  return state->path_list_p[it->list_pos].ptr[it->item_pos];
+}
+
+void jerry_module_path_update_root_length(jerry_path_join_state_t *state,
+  jerry_path_iterator_t *it)
+{
+  state->path_total_size += state->path_list_p[it->list_pos].size;
+  if (!state->only_first_path_is_root || it->list_pos == 0) {
+    jerry_module_path_get_root(state->style,
+      state->path_list_p[it->list_pos].ptr, &it->root_length);
+  }
+}
+
+void jerry_module_path_interator_prev(jerry_path_join_state_t *state,
+  jerry_path_iterator_t *it)
+{
+  if (it->list_pos < 0) {
+    return;
+  }
+  if (it->item_pos > 0) {
+    --it->item_pos;
+    return;
+  }
+  if (it->root_length > 0) {
+    it->list_pos = -1;
+    return;
+  }
+  it->list_pos -= 1;
+  if (it->list_pos >= 0) {
+    jerry_module_path_update_root_length(state, it);
+    /**
+     * The tail '\0' treat as '/' that is a path separator for both
+     * POSIX/WINDOWS
+     */
+    it->item_pos = state->path_list_p[it->list_pos].size;
+  }
+}
+
+jerry_char_t jerry_module_path_iterator_is_head(jerry_path_iterator_t *it)
+{
+  return it->item_pos == 0;
+}
+
+void jerry_module_path_push_front_direct(jerry_path_join_state_t *state,
+  jerry_char_t ch)
+{
+  --state->buffer_index;
+  if (state->buffer_p) {
+    if (state->buffer_index < state->buffer_size) {
+      state->buffer_p[state->buffer_index] = ch;
+    }
+  }
+}
+
+void jerry_module_path_push_front(jerry_path_join_state_t *state,
+  jerry_char_t ch)
+{
+  jerry_module_path_push_front_direct(state, ch);
+  if (jerry_module_path_is_separator(state->style, ch)) {
+    state->segment_length = 0;
+  } else {
+    state->segment_length += 1;
+  }
+}
+
+jerry_char_t jerry_module_path_get_separator(jerry_path_style_t path_style)
+{
+  return path_style == JERRY_PATH_STYLE_POSIX ? '/' : '\\';
+}
+
+static jerry_size_t
+jerry_module_path_join_and_normalize_detail(jerry_path_style_t style,
+  bool only_first_path_is_root, const jerry_string_t *path_list_p,
+  jerry_size_t path_list_count, jerry_char_t *buffer_p,
+  jerry_size_t buffer_size, jerry_size_t path_size_calculated)
+{
+  jerry_path_join_state_t state = {0};
+  state.style = style;
+  state.only_first_path_is_root = only_first_path_is_root;
+  state.buffer_p = buffer_p;
+  state.buffer_size = buffer_size;
+  if (buffer_p) {
+    if (path_size_calculated > buffer_size) {
+      state.buffer_index_init = path_size_calculated;
+    } else {
+      state.buffer_index_init = buffer_size;
+    }
+  } else {
+    state.buffer_index_init = UINT32_MAX;
+  }
+  state.buffer_index = state.buffer_index_init;
+  state.path_size_calculated = path_size_calculated;
+  state.path_list_p = path_list_p;
+  state.path_list_count = path_list_count;
+  state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_SEPARATOR;
+
+  jerry_size_t path_list_tail_pos = path_list_count - 1;
+  jerry_path_iterator_t it = {path_list_tail_pos,
+    path_list_p[path_list_tail_pos].size, 0};
+  jerry_module_path_update_root_length(&state, &it);
+  jerry_module_path_push_front_direct(&state, '\0');
+  for (;;) {
+    jerry_char_t ch = jerry_module_path_get_char(&state, &it);
+    if (ch == 0) {
+      break;
+    }
+    switch (state.iterator_state) {
+    case JERRY_PATH_JOIN_ITERATOR_STATE_ROOT: {
+      jerry_module_path_push_front_direct(&state, ch);
+      state.segment_length += 1;
+      break;
+    }
+    case JERRY_PATH_JOIN_ITERATOR_STATE_SEPARATOR: {
+      if (ch == '.') {
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_ONE_DOT;
+      } else if (!jerry_module_path_is_separator(style, ch)) {
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_SEGMENT;
+        jerry_module_path_push_front(&state, ch);
+      }
+      break;
+    }
+    case JERRY_PATH_JOIN_ITERATOR_STATE_ONE_DOT: {
+      if (ch == '.') {
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_TWO_DOT;
+      } else if (jerry_module_path_is_separator(style, ch)) {
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_SEPARATOR;
+      } else {
+        jerry_module_path_push_front(&state, '.');
+        jerry_module_path_push_front(&state, ch);
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_SEGMENT;
+      }
+      break;
+    }
+    case JERRY_PATH_JOIN_ITERATOR_STATE_TWO_DOT: {
+      if (jerry_module_path_is_separator(style, ch)) {
+        state.segment_eat_count += 1;
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_SEPARATOR;
+      } else {
+        jerry_module_path_push_front(&state, ch);
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_SEGMENT;
+      }
+      break;
+    }
+    case JERRY_PATH_JOIN_ITERATOR_STATE_SEGMENT: {
+      if (jerry_module_path_is_separator(style, ch)) {
+        if (state.segment_eat_count > 0) {
+          state.segment_eat_count -= 1;
+          state.buffer_index += state.segment_length;
+          state.segment_length = 0;
+        } else {
+          jerry_module_path_push_front(&state,
+            jerry_module_path_get_separator(style));
+        }
+        state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_SEPARATOR;
+      } else {
+        jerry_module_path_push_front(&state, ch);
+      }
+      break;
+    }
+    }
+
+    if (it.item_pos < it.root_length) {
+      state.iterator_state = JERRY_PATH_JOIN_ITERATOR_STATE_ROOT;
+      if (it.root_length == 1 &&
+          (state.buffer_index_init - state.buffer_index) == 1) {
+        jerry_module_path_push_front(&state,
+          jerry_module_path_get_separator(style));
+      }
+    }
+    jerry_module_path_interator_prev(&state, &it);
+  }
+  if (state.iterator_state != JERRY_PATH_JOIN_ITERATOR_STATE_ROOT) {
+    if (state.segment_eat_count > 0 && state.segment_length > 0) {
+      state.segment_eat_count -= 1;
+      state.buffer_index += state.segment_length;
+      state.segment_length = 0;
+      if (state.buffer_index_init - state.buffer_index > 1) {
+        /* Strip the starting path separator `/` or `\` */
+        state.buffer_index += 1;
+      }
+    }
+
+    if (state.buffer_index_init - state.buffer_index == 1) {
+      if (state.segment_eat_count == 0) {
+        if (state.path_total_size > 0) {
+          jerry_module_path_push_front(&state, '.');
+        }
+      } else {
+        for (jerry_size_t i = 0; i < state.segment_eat_count; i += 1) {
+          jerry_module_path_push_front(&state, '.');
+          jerry_module_path_push_front(&state, '.');
+          if (i < state.segment_eat_count - 1) {
+            jerry_module_path_push_front(&state, '/');
+          }
+        }
+      }
+    }
+  }
+  jerry_size_t path_size = state.buffer_index_init - state.buffer_index;
+  if (state.buffer_p) {
+    if (state.buffer_index > 0) {
+      memmove(buffer_p, buffer_p + state.buffer_index, path_size);
+    } else {
+      if (buffer_size > 0 && buffer_size < path_size) {
+        buffer_p[buffer_size - 1] = '\0';
+      }
+    }
+  }
+  return path_size;
+} /* jerry_module_path_join_and_normalize_detail */
+
+static jerry_size_t
+jerry_module_path_join_and_normalize(jerry_path_style_t style,
+  bool only_first_path_is_root, const jerry_string_t *path_list_p,
+  jerry_size_t path_list_count, jerry_char_t *buffer_p,
+  jerry_size_t buffer_size)
+{
+  jerry_size_t path_size_calculated;
+  if (path_list_count < 1) {
+    return 0;
+  }
+
+  path_size_calculated = jerry_module_path_join_and_normalize_detail(style,
+    only_first_path_is_root, path_list_p, path_list_count, NULL, buffer_size,
+    0);
+  if (buffer_p != NULL) {
+    jerry_module_path_join_and_normalize_detail(style, only_first_path_is_root,
+      path_list_p, path_list_count, buffer_p, buffer_size,
+      path_size_calculated);
+  }
+  return path_size_calculated - 1;
+} /* jerry_module_path_join_and_normalize */
 
 /**
  * This is a list of separators used in different styles. Windows can read
@@ -584,105 +1070,25 @@ static bool cpj_path_is_root_absolute(enum cpj_path_style path_style,
   return cpj_path_is_separator(path_style, &path[length - 1]);
 }
 
-static void cpj_path_fix_root(enum cpj_path_style path_style, char *buffer,
-  size_t buffer_size, size_t length)
-{
-  size_t i;
-
-  // This only affects windows.
-  if (path_style != CPJ_STYLE_WINDOWS) {
-    return;
-  }
-
-  // Make sure we are not writing further than we are actually allowed to.
-  if (length > buffer_size) {
-    length = buffer_size;
-  }
-
-  // Replace all forward slashes with backwards slashes. Since this is windows
-  // we can't have any forward slashes in the root.
-  for (i = 0; i < length; ++i) {
-    if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, &buffer[i])) {
-      buffer[i] = *separators[CPJ_STYLE_WINDOWS];
-    }
-  }
-}
-
 static size_t
 cpj_path_join_and_normalize_multiple(enum cpj_path_style path_style,
   const char **paths, char *buffer, size_t buffer_size)
 {
-  size_t pos;
-  bool absolute, has_segment_output;
-  struct cpj_segment_joined sj;
-
-  // We initialize the position after the root, which should get us started.
-  cpj_path_get_root(path_style, paths[0], &pos);
-
-  // Determine whether the path is absolute or not. We need that to determine
-  // later on whether we can remove superfluous "../" or not.
-  absolute = cpj_path_is_root_absolute(path_style, paths[0], pos);
-
-  // First copy the root to the output. After copying, we will normalize the
-  // root.
-  cpj_path_output_sized(buffer, buffer_size, 0, paths[0], pos);
-  cpj_path_fix_root(path_style, buffer, buffer_size, pos);
-
-  // So we just grab the first segment. If there is no segment we will always
-  // output a "/", since we currently only support absolute paths here.
-  if (!cpj_path_get_first_segment_joined(path_style, paths, &sj)) {
-    goto done;
+  jerry_size_t i;
+  jerry_size_t path_list_count = 0;
+  for (const char **path_it = paths; *path_it; ++path_it) {
+    path_list_count += 1;
   }
-
-  // Let's assume that we don't have any segment output for now. We will toggle
-  // this flag once there is some output.
-  has_segment_output = false;
-
-  do {
-    // Check whether we have to drop this segment because of resolving a
-    // relative path or because it is a CPJ_CURRENT segment.
-    if (cpj_path_segment_will_be_removed(path_style, &sj, absolute)) {
-      continue;
-    }
-
-    // We add a separator if we previously wrote a segment. The last segment
-    // must not have a trailing separator. This must happen before the segment
-    // output, since we would override the null terminating character with
-    // reused buffers if this was done afterwards.
-    if (has_segment_output) {
-      pos += cpj_path_output_separator(path_style, buffer, buffer_size, pos);
-    }
-
-    // Remember that we have segment output, so we can handle the trailing slash
-    // later on. This is necessary since we might have segments but they are all
-    // removed.
-    has_segment_output = true;
-
-    // Write out the segment but keep in mind that we need to follow the
-    // buffer size limitations. That's why we use the path output functions
-    // here.
-    pos += cpj_path_output_sized(buffer, buffer_size, pos, sj.segment.begin,
-      sj.segment.size);
-  } while (cpj_path_get_next_segment_joined(path_style, &sj));
-
-  // Remove the trailing slash, but only if we have segment output. We don't
-  // want to remove anything from the root.
-  if (!has_segment_output && pos == 0) {
-    // This may happen if the path is absolute and all segments have been
-    // removed. We can not have an empty output - and empty output means we stay
-    // in the current directory. So we will output a ".".
-    assert(absolute == false);
-    pos += cpj_path_output_current(buffer, buffer_size, pos);
+  if (path_list_count == 0)
+    return 0;
+  JERRY_VLA(jerry_string_t, path_list, path_list_count);
+  for (i = 0; i < path_list_count; ++i) {
+    path_list[i].ptr = (const jerry_char_t *)paths[i];
+    path_list[i].size = (jerry_size_t)strlen(paths[i]);
   }
-
-  // We must append a '\0' in any case, unless the buffer size is zero. If the
-  // buffer size is zero, which means we can not.
-done:
-  cpj_path_terminate_output(buffer, buffer_size, pos);
-
-  // And finally let our caller know about the total size of the normalized
-  // path.
-  return pos;
+  return jerry_module_path_join_and_normalize((jerry_path_style_t)path_style,
+    true, path_list, path_list_count, (jerry_char_t *)buffer,
+    (jerry_size_t)buffer_size);
 }
 
 size_t cpj_path_get_absolute(enum cpj_path_style path_style, const char *base,
@@ -884,6 +1290,17 @@ size_t cpj_path_join(enum cpj_path_style path_style, const char *path_a,
   // for us.
   return cpj_path_join_and_normalize_multiple(path_style, paths, buffer,
     buffer_size);
+}
+
+CPJ_PUBLIC size_t cpj_path_join_module(enum cpj_path_style path_style,
+  const char *path_a, const char *path_b, char *buffer, size_t buffer_size)
+{
+  jerry_string_t paths[2] = {
+    {(const jerry_char_t *)path_a, (jerry_size_t)strlen(path_a)},
+    {(const jerry_char_t *)path_b, (jerry_size_t)strlen(path_b)},
+  };
+  return jerry_module_path_join_and_normalize((jerry_path_style_t)path_style,
+    false, paths, 2, (jerry_char_t *)buffer, (jerry_size_t)buffer_size);
 }
 
 size_t cpj_path_join_multiple(enum cpj_path_style path_style,
