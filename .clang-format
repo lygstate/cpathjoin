@@ -1,6 +1,6 @@
 ---
 BasedOnStyle: LLVM
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: BlockIndent
 BinPackArguments: true
 BinPackParameters: true
 BreakBeforeBraces: Mozilla

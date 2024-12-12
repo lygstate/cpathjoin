@@ -6,9 +6,9 @@
 
 int join_multiple(void)
 {
-  char buffer[FILENAME_MAX];
-  const char *paths[3];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  const cpj_char_t *paths[3];
+  cpj_size_t length;
 
   paths[0] = "hello/there";
   paths[1] = "../world";
@@ -29,8 +29,8 @@ int join_multiple(void)
 
 int join_relative_back_after_root(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_WINDOWS, "this\\", "C:\\..\\..\\is\\a\\test\\", buffer,
     sizeof(buffer));
@@ -48,8 +48,8 @@ int join_relative_back_after_root(void)
 
 int join_back_after_root(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_WINDOWS, "C:\\this\\path", "C:\\..\\is\\a\\test\\", buffer,
     sizeof(buffer));
@@ -67,8 +67,8 @@ int join_back_after_root(void)
 
 int join_with_two_roots(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_WINDOWS, "C:\\this\\path", "C:\\is\\a\\test\\", buffer,
     sizeof(buffer));
@@ -86,8 +86,8 @@ int join_with_two_roots(void)
 
 int join_two_unc(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_WINDOWS, "\\\\server\\unc\\path", "\\\\server2\\unc\\path",
     buffer, sizeof(buffer));
@@ -105,8 +105,8 @@ int join_two_unc(void)
 
 int join_two_absolute(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_UNIX, "/first", "/second", buffer, sizeof(buffer));
 
@@ -123,8 +123,8 @@ int join_two_absolute(void)
 
 int join_empty(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_UNIX, "hello", "..", buffer, sizeof(buffer));
 
@@ -141,8 +141,8 @@ int join_empty(void)
 
 int join_navigate_back(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_UNIX, "hello/there", "..", buffer, sizeof(buffer));
 
@@ -159,8 +159,8 @@ int join_navigate_back(void)
 
 int join_simple(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_join(CPJ_STYLE_UNIX, "hello", "there", buffer, sizeof(buffer));
 

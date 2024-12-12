@@ -6,7 +6,7 @@
 
 int segment_change_overlap(void)
 {
-  char buffer[FILENAME_MAX] = "C:\\this\\cool\\path\\";
+  cpj_char_t buffer[FILENAME_MAX] = "C:\\this\\cool\\path\\";
   struct cpj_segment segment;
 
   if (!cpj_path_get_first_segment(CPJ_STYLE_WINDOWS, buffer, &segment)) {
@@ -28,8 +28,8 @@ int segment_change_overlap(void)
 
 int segment_change_with_separator(void)
 {
-  const char *path;
-  char buffer[FILENAME_MAX];
+  const cpj_char_t *path;
+  cpj_char_t buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
   path = "C:\\this\\cool\\path\\";
@@ -52,8 +52,8 @@ int segment_change_with_separator(void)
 
 int segment_change_empty(void)
 {
-  const char *path;
-  char buffer[FILENAME_MAX];
+  const cpj_char_t *path;
+  cpj_char_t buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
   path = "C:\\this\\cool\\path\\";
@@ -76,8 +76,8 @@ int segment_change_empty(void)
 
 int segment_change_trim(void)
 {
-  const char *path;
-  char buffer[FILENAME_MAX];
+  const cpj_char_t *path;
+  cpj_char_t buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
   path = "C:\\this\\cool\\path\\";
@@ -100,8 +100,8 @@ int segment_change_trim(void)
 
 int segment_change_last(void)
 {
-  const char *path;
-  char buffer[FILENAME_MAX];
+  const cpj_char_t *path;
+  cpj_char_t buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
   path = "C:\\this\\cool\\path\\";
@@ -131,8 +131,8 @@ int segment_change_last(void)
 
 int segment_change_first(void)
 {
-  const char *path;
-  char buffer[FILENAME_MAX];
+  const cpj_char_t *path;
+  cpj_char_t buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
   path = "C:\\this\\cool\\path\\";
@@ -162,8 +162,8 @@ int segment_change_first(void)
 
 int segment_change_simple(void)
 {
-  const char *path;
-  char buffer[FILENAME_MAX];
+  const cpj_char_t *path;
+  cpj_char_t buffer[FILENAME_MAX];
   struct cpj_segment segment;
 
   path = "C:\\this\\cool\\path\\";
@@ -186,7 +186,7 @@ int segment_change_simple(void)
 
 int segment_back_with_root(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "C:\\this\\path";
@@ -215,7 +215,7 @@ int segment_back_with_root(void)
 
 int segment_type(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "/a/./../.folder/..folder";
@@ -265,7 +265,7 @@ int segment_type(void)
 
 int segment_previous_too_far_root(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "//now/hello_world/abc/";
@@ -295,7 +295,7 @@ int segment_previous_too_far_root(void)
 
 int segment_previous_too_far(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "//now/hello_world/abc/";
@@ -325,7 +325,7 @@ int segment_previous_too_far(void)
 
 int segment_previous_relative(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "now/hello_world/abc/";
@@ -363,7 +363,7 @@ int segment_previous_relative(void)
 
 int segment_previous_absolute(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "/now/hello_world/abc/";
@@ -401,7 +401,7 @@ int segment_previous_absolute(void)
 
 int segment_previous_relative_one_char_first(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "n/hello_world/abc/";
@@ -469,7 +469,7 @@ int segment_previous_relative_one_char_first(void)
 
 int segment_previous_absolute_one_char_first(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "/n/hello_world/abc/";
@@ -537,7 +537,7 @@ int segment_previous_absolute_one_char_first(void)
 
 int segment_next_too_far(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "/hello_world/abc/";
@@ -563,7 +563,7 @@ int segment_next_too_far(void)
 
 int segment_next(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "/hello_world/abc/";
@@ -593,7 +593,7 @@ int segment_next(void)
 
 int segment_last(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "/hello_world/abc";
@@ -621,7 +621,7 @@ int segment_last(void)
 
 int segment_first(void)
 {
-  const char *path;
+  const cpj_char_t *path;
   struct cpj_segment segment;
 
   path = "/hello_world/abc";

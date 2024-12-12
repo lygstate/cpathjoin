@@ -8,7 +8,7 @@ Guesses the path style.
 
 ## Description
 ```c
-enum cpj_path_style cpj_path_guess_style(const char *path);
+cpj_path_style_t cpj_path_guess_style(const char *path);
 ```
 
 This function guesses the path style based on a submitted path-string. The guessing will look at the root and the type of slashes contained in the path and return the style which is more likely used in the path. 

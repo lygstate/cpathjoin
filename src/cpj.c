@@ -9,7 +9,7 @@
  * multiple separators, but it generally outputs just a backslash. The output
  * will always use the first character for the output.
  */
-static const char *separators[] = {
+static const cpj_char_t *separators[] = {
   "\\/", // CPJ_STYLE_WINDOWS
   "/"    // CPJ_STYLE_UNIX
 };
@@ -22,14 +22,16 @@ static const char *separators[] = {
 struct cpj_segment_joined
 {
   struct cpj_segment segment;
-  const char **paths;
-  size_t path_index;
+  const cpj_char_t **paths;
+  cpj_size_t path_index;
 };
 
-static size_t cpj_path_output_sized(char *buffer, size_t buffer_size,
-  size_t position, const char *str, size_t length)
+static cpj_size_t cpj_path_output_sized(
+  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position,
+  const cpj_char_t *str, cpj_size_t length
+)
 {
-  size_t amount_written;
+  cpj_size_t amount_written;
 
   // First we determine the amount which we can write to the buffer. There are
   // three cases. In the first case we have enough to store the whole string in
@@ -55,41 +57,49 @@ static size_t cpj_path_output_sized(char *buffer, size_t buffer_size,
   return length;
 }
 
-static size_t cpj_path_output_current(char *buffer, size_t buffer_size,
-  size_t position)
+static cpj_size_t cpj_path_output_current(
+  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position
+)
 {
   // We output a "current" directory, which is a single character. This
   // character is currently not style dependant.
   return cpj_path_output_sized(buffer, buffer_size, position, ".", 1);
 }
 
-static size_t cpj_path_output_back(char *buffer, size_t buffer_size,
-  size_t position)
+static cpj_size_t cpj_path_output_back(
+  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position
+)
 {
   // We output a "back" directory, which ahs two characters. This
   // character is currently not style dependant.
   return cpj_path_output_sized(buffer, buffer_size, position, "..", 2);
 }
 
-static size_t cpj_path_output_separator(enum cpj_path_style path_style,
-  char *buffer, size_t buffer_size, size_t position)
+static cpj_size_t cpj_path_output_separator(
+  cpj_path_style_t path_style, cpj_char_t *buffer, cpj_size_t buffer_size,
+  cpj_size_t position
+)
 {
   // We output a separator, which is a single character.
-  return cpj_path_output_sized(buffer, buffer_size, position,
-    separators[path_style], 1);
+  return cpj_path_output_sized(
+    buffer, buffer_size, position, separators[path_style], 1
+  );
 }
 
-static size_t cpj_path_output_dot(char *buffer, size_t buffer_size,
-  size_t position)
+static cpj_size_t cpj_path_output_dot(
+  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position
+)
 {
   // We output a dot, which is a single character. This is used for extensions.
   return cpj_path_output_sized(buffer, buffer_size, position, ".", 1);
 }
 
-static size_t cpj_path_output(char *buffer, size_t buffer_size, size_t position,
-  const char *str)
+static cpj_size_t cpj_path_output(
+  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position,
+  const cpj_char_t *str
+)
 {
-  size_t length;
+  cpj_size_t length;
 
   // This just does a sized output internally, but first measuring the
   // null-terminated string.
@@ -97,8 +107,9 @@ static size_t cpj_path_output(char *buffer, size_t buffer_size, size_t position,
   return cpj_path_output_sized(buffer, buffer_size, position, str, length);
 }
 
-static void cpj_path_terminate_output(char *buffer, size_t buffer_size,
-  size_t pos)
+static void cpj_path_terminate_output(
+  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t pos
+)
 {
   if (buffer_size > 0) {
     if (pos >= buffer_size) {
@@ -109,8 +120,10 @@ static void cpj_path_terminate_output(char *buffer, size_t buffer_size,
   }
 }
 
-static bool cpj_path_is_string_equal(enum cpj_path_style path_style,
-  const char *first, const char *second, size_t first_size, size_t second_size)
+static bool cpj_path_is_string_equal(
+  cpj_path_style_t path_style, const cpj_char_t *first,
+  const cpj_char_t *second, cpj_size_t first_size, cpj_size_t second_size
+)
 {
   bool are_both_separators;
 
@@ -156,8 +169,8 @@ static bool cpj_path_is_string_equal(enum cpj_path_style path_style,
   return true;
 }
 
-static const char *cpj_path_find_next_stop(enum cpj_path_style path_style,
-  const char *c)
+static const cpj_char_t *
+cpj_path_find_next_stop(cpj_path_style_t path_style, const cpj_char_t *c)
 {
   // We just move forward until we find a '\0' or a separator, which will be our
   // next "stop".
@@ -169,8 +182,9 @@ static const char *cpj_path_find_next_stop(enum cpj_path_style path_style,
   return c;
 }
 
-static const char *cpj_path_find_previous_stop(enum cpj_path_style path_style,
-  const char *begin, const char *c)
+static const cpj_char_t *cpj_path_find_previous_stop(
+  cpj_path_style_t path_style, const cpj_char_t *begin, const cpj_char_t *c
+)
 {
   // We just move back until we find a separator or reach the beginning of the
   // path, which will be our previous "stop".
@@ -187,9 +201,10 @@ static const char *cpj_path_find_previous_stop(enum cpj_path_style path_style,
   }
 }
 
-static bool
-cpj_path_get_first_segment_without_root(enum cpj_path_style path_style,
-  const char *path, const char *segments, struct cpj_segment *segment)
+static bool cpj_path_get_first_segment_without_root(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t *segments, struct cpj_segment *segment
+)
 {
   // Let's remember the path. We will move the path pointer afterwards, that's
   // why this has to be done first.
@@ -224,22 +239,24 @@ cpj_path_get_first_segment_without_root(enum cpj_path_style path_style,
 
   // And finally, calculate the size of the segment by subtracting the position
   // from the end.
-  segment->size = (size_t)(segments - segment->begin);
+  segment->size = (cpj_size_t)(segments - segment->begin);
   segment->end = segments;
 
   // Tell the caller that we found a segment.
   return true;
 }
 
-static bool
-cpj_path_get_last_segment_without_root(enum cpj_path_style path_style,
-  const char *path, struct cpj_segment *segment)
+static bool cpj_path_get_last_segment_without_root(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  struct cpj_segment *segment
+)
 {
   // Now this is fairly similar to the normal algorithm, however, it will assume
   // that there is no root in the path. So we grab the first segment at this
   // position, assuming there is no root.
-  if (!cpj_path_get_first_segment_without_root(path_style, path, path,
-        segment)) {
+  if (!cpj_path_get_first_segment_without_root(
+        path_style, path, path, segment
+      )) {
     return false;
   }
 
@@ -253,8 +270,10 @@ cpj_path_get_last_segment_without_root(enum cpj_path_style path_style,
   return true;
 }
 
-static bool cpj_path_get_first_segment_joined(enum cpj_path_style path_style,
-  const char **paths, struct cpj_segment_joined *sj)
+static bool cpj_path_get_first_segment_joined(
+  cpj_path_style_t path_style, const cpj_char_t **paths,
+  struct cpj_segment_joined *sj
+)
 {
   bool result;
 
@@ -268,16 +287,18 @@ static bool cpj_path_get_first_segment_joined(enum cpj_path_style path_style,
   // or not.
   result = false;
   while (paths[sj->path_index] != NULL &&
-         (result = cpj_path_get_first_segment(path_style, paths[sj->path_index],
-            &sj->segment)) == false) {
+         (result = cpj_path_get_first_segment(
+            path_style, paths[sj->path_index], &sj->segment
+          )) == false) {
     ++sj->path_index;
   }
 
   return result;
 }
 
-static bool cpj_path_get_next_segment_joined(enum cpj_path_style path_style,
-  struct cpj_segment_joined *sj)
+static bool cpj_path_get_next_segment_joined(
+  cpj_path_style_t path_style, struct cpj_segment_joined *sj
+)
 {
   bool result;
 
@@ -307,8 +328,10 @@ static bool cpj_path_get_next_segment_joined(enum cpj_path_style path_style,
     // has anything useful in it. There is one more thing we have to consider
     // here - for the first time we do this we want to skip the root, but
     // afterwards we will consider that to be part of the segments.
-    result = cpj_path_get_first_segment_without_root(path_style,
-      sj->paths[sj->path_index], sj->paths[sj->path_index], &sj->segment);
+    result = cpj_path_get_first_segment_without_root(
+      path_style, sj->paths[sj->path_index], sj->paths[sj->path_index],
+      &sj->segment
+    );
 
   } while (!result);
 
@@ -316,8 +339,9 @@ static bool cpj_path_get_next_segment_joined(enum cpj_path_style path_style,
   return result;
 }
 
-static bool cpj_path_get_previous_segment_joined(enum cpj_path_style path_style,
-  struct cpj_segment_joined *sj)
+static bool cpj_path_get_previous_segment_joined(
+  cpj_path_style_t path_style, struct cpj_segment_joined *sj
+)
 {
   bool result;
 
@@ -348,11 +372,13 @@ static bool cpj_path_get_previous_segment_joined(enum cpj_path_style path_style,
     // If this is the first path we will have to consider that this path might
     // include a root, otherwise we just treat is as a segment.
     if (sj->path_index == 0) {
-      result = cpj_path_get_last_segment(path_style, sj->paths[sj->path_index],
-        &sj->segment);
+      result = cpj_path_get_last_segment(
+        path_style, sj->paths[sj->path_index], &sj->segment
+      );
     } else {
-      result = cpj_path_get_last_segment_without_root(path_style,
-        sj->paths[sj->path_index], &sj->segment);
+      result = cpj_path_get_last_segment_without_root(
+        path_style, sj->paths[sj->path_index], &sj->segment
+      );
     }
 
   } while (!result);
@@ -360,9 +386,9 @@ static bool cpj_path_get_previous_segment_joined(enum cpj_path_style path_style,
   return result;
 }
 
-static bool
-cpj_path_segment_back_will_be_removed(enum cpj_path_style path_style,
-  struct cpj_segment_joined *sj)
+static bool cpj_path_segment_back_will_be_removed(
+  cpj_path_style_t path_style, struct cpj_segment_joined *sj
+)
 {
   enum cpj_segment_type type;
   int counter;
@@ -404,9 +430,9 @@ cpj_path_segment_back_will_be_removed(enum cpj_path_style path_style,
   return false;
 }
 
-static bool
-cpj_path_segment_normal_will_be_removed(enum cpj_path_style path_style,
-  struct cpj_segment_joined *sj)
+static bool cpj_path_segment_normal_will_be_removed(
+  cpj_path_style_t path_style, struct cpj_segment_joined *sj
+)
 {
   enum cpj_segment_type type;
   int counter;
@@ -442,8 +468,10 @@ cpj_path_segment_normal_will_be_removed(enum cpj_path_style path_style,
   return false;
 }
 
-static bool cpj_path_segment_will_be_removed(enum cpj_path_style path_style,
-  const struct cpj_segment_joined *sj, bool absolute)
+static bool cpj_path_segment_will_be_removed(
+  cpj_path_style_t path_style, const struct cpj_segment_joined *sj,
+  bool absolute
+)
 {
   enum cpj_segment_type type;
   struct cpj_segment_joined sjc;
@@ -463,9 +491,9 @@ static bool cpj_path_segment_will_be_removed(enum cpj_path_style path_style,
   }
 }
 
-static bool
-cpj_path_segment_joined_skip_invisible(enum cpj_path_style path_style,
-  struct cpj_segment_joined *sj, bool absolute)
+static bool cpj_path_segment_joined_skip_invisible(
+  cpj_path_style_t path_style, struct cpj_segment_joined *sj, bool absolute
+)
 {
   while (cpj_path_segment_will_be_removed(path_style, sj, absolute)) {
     if (!cpj_path_get_next_segment_joined(path_style, sj)) {
@@ -476,9 +504,10 @@ cpj_path_segment_joined_skip_invisible(enum cpj_path_style path_style,
   return true;
 }
 
-static void cpj_path_get_root_windows(const char *path, size_t *length)
+static void
+cpj_path_get_root_windows(const cpj_char_t *path, cpj_size_t *length)
 {
-  const char *c;
+  const cpj_char_t *c;
   bool is_device_path;
 
   // We can not determine the root if this is an empty string. So we set the
@@ -542,7 +571,7 @@ static void cpj_path_get_root_windows(const char *path, size_t *length)
     }
 
     // Finally, calculate the size of the root.
-    *length = (size_t)(c - path);
+    *length = (cpj_size_t)(c - path);
     return;
   }
 
@@ -560,7 +589,7 @@ static void cpj_path_get_root_windows(const char *path, size_t *length)
   }
 }
 
-static void cpj_path_get_root_unix(const char *path, size_t *length)
+static void cpj_path_get_root_unix(const cpj_char_t *path, cpj_size_t *length)
 {
   // The slash of the unix path represents the root. There is no root if there
   // is no slash.
@@ -571,8 +600,9 @@ static void cpj_path_get_root_unix(const char *path, size_t *length)
   }
 }
 
-static bool cpj_path_is_root_absolute(enum cpj_path_style path_style,
-  const char *path, size_t length)
+static bool cpj_path_is_root_absolute(
+  cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t length
+)
 {
   // This is definitely not absolute if there is no root.
   if (length == 0) {
@@ -584,10 +614,12 @@ static bool cpj_path_is_root_absolute(enum cpj_path_style path_style,
   return cpj_path_is_separator(path_style, &path[length - 1]);
 }
 
-static void cpj_path_fix_root(enum cpj_path_style path_style, char *buffer,
-  size_t buffer_size, size_t length)
+static void cpj_path_fix_root(
+  cpj_path_style_t path_style, cpj_char_t *buffer, cpj_size_t buffer_size,
+  cpj_size_t length
+)
 {
-  size_t i;
+  cpj_size_t i;
 
   // This only affects windows.
   if (path_style != CPJ_STYLE_WINDOWS) {
@@ -608,16 +640,17 @@ static void cpj_path_fix_root(enum cpj_path_style path_style, char *buffer,
   }
 }
 
-static size_t
-cpj_path_join_and_normalize_multiple(enum cpj_path_style path_style,
-  const char **paths, char *buffer, size_t buffer_size)
+static cpj_size_t cpj_path_join_and_normalize_multiple(
+  cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
+  cpj_size_t buffer_size
+)
 {
-  size_t pos;
+  cpj_size_t pos;
   bool absolute, has_segment_output;
   struct cpj_segment_joined sj;
 
   // We initialize the position after the root, which should get us started.
-  cpj_path_get_root(path_style, paths[0], &pos);
+  pos = cpj_path_get_root(path_style, paths[0]);
 
   // Determine whether the path is absolute or not. We need that to determine
   // later on whether we can remove superfluous "../" or not.
@@ -661,8 +694,9 @@ cpj_path_join_and_normalize_multiple(enum cpj_path_style path_style,
     // Write out the segment but keep in mind that we need to follow the
     // buffer size limitations. That's why we use the path output functions
     // here.
-    pos += cpj_path_output_sized(buffer, buffer_size, pos, sj.segment.begin,
-      sj.segment.size);
+    pos += cpj_path_output_sized(
+      buffer, buffer_size, pos, sj.segment.begin, sj.segment.size
+    );
   } while (cpj_path_get_next_segment_joined(path_style, &sj));
 
   // Remove the trailing slash, but only if we have segment output. We don't
@@ -685,11 +719,13 @@ done:
   return pos;
 }
 
-size_t cpj_path_get_absolute(enum cpj_path_style path_style, const char *base,
-  const char *path, char *buffer, size_t buffer_size)
+cpj_size_t cpj_path_get_absolute(
+  cpj_path_style_t path_style, const cpj_char_t *base, const cpj_char_t *path,
+  cpj_char_t *buffer, cpj_size_t buffer_size
+)
 {
-  size_t i;
-  const char *paths[4];
+  cpj_size_t i;
+  const cpj_char_t *paths[4];
 
   // The basename should be an absolute path if the caller is using the API
   // correctly. However, he might not and in that case we will append a fake
@@ -718,13 +754,16 @@ size_t cpj_path_get_absolute(enum cpj_path_style path_style, const char *base,
   }
 
   // Finally join everything together and normalize it.
-  return cpj_path_join_and_normalize_multiple(path_style, paths, buffer,
-    buffer_size);
+  return cpj_path_join_and_normalize_multiple(
+    path_style, paths, buffer, buffer_size
+  );
 }
 
-static void cpj_path_skip_segments_until_diverge(enum cpj_path_style path_style,
-  struct cpj_segment_joined *bsj, struct cpj_segment_joined *osj, bool absolute,
-  bool *base_available, bool *other_available)
+static void cpj_path_skip_segments_until_diverge(
+  cpj_path_style_t path_style, struct cpj_segment_joined *bsj,
+  struct cpj_segment_joined *osj, bool absolute, bool *base_available,
+  bool *other_available
+)
 {
   // Now looping over all segments until they start to diverge. A path may
   // diverge if two segments are not equal or if one path reaches the end.
@@ -733,10 +772,10 @@ static void cpj_path_skip_segments_until_diverge(enum cpj_path_style path_style,
     // Check whether there is anything available after we skip everything which
     // is invisible. We do that for both paths, since we want to let the caller
     // know which path has some trailing segments after they diverge.
-    *base_available = cpj_path_segment_joined_skip_invisible(path_style, bsj,
-      absolute);
-    *other_available = cpj_path_segment_joined_skip_invisible(path_style, osj,
-      absolute);
+    *base_available =
+      cpj_path_segment_joined_skip_invisible(path_style, bsj, absolute);
+    *other_available =
+      cpj_path_segment_joined_skip_invisible(path_style, osj, absolute);
 
     // We are done if one or both of those paths reached the end. They either
     // diverge or both reached the end - but in both cases we can not continue
@@ -747,8 +786,10 @@ static void cpj_path_skip_segments_until_diverge(enum cpj_path_style path_style,
 
     // Compare the content of both segments. We are done if they are not equal,
     // since they diverge.
-    if (!cpj_path_is_string_equal(path_style, bsj->segment.begin,
-          osj->segment.begin, bsj->segment.size, osj->segment.size)) {
+    if (!cpj_path_is_string_equal(
+          path_style, bsj->segment.begin, osj->segment.begin, bsj->segment.size,
+          osj->segment.size
+        )) {
       break;
     }
 
@@ -760,13 +801,14 @@ static void cpj_path_skip_segments_until_diverge(enum cpj_path_style path_style,
   } while (*base_available && *other_available);
 }
 
-size_t cpj_path_get_relative(enum cpj_path_style path_style,
-  const char *base_directory, const char *path, char *buffer,
-  size_t buffer_size)
+cpj_size_t cpj_path_get_relative(
+  cpj_path_style_t path_style, const cpj_char_t *base_directory,
+  const cpj_char_t *path, cpj_char_t *buffer, cpj_size_t buffer_size
+)
 {
-  size_t pos, base_root_length, path_root_length;
+  cpj_size_t pos, base_root_length, path_root_length;
   bool absolute, base_available, other_available, has_output;
-  const char *base_paths[2], *other_paths[2];
+  const cpj_char_t *base_paths[2], *other_paths[2];
   struct cpj_segment_joined bsj, osj;
 
   pos = 0;
@@ -774,19 +816,20 @@ size_t cpj_path_get_relative(enum cpj_path_style path_style,
   // First we compare the roots of those two paths. If the roots are not equal
   // we can't continue, since there is no way to get a relative path from
   // different roots.
-  cpj_path_get_root(path_style, base_directory, &base_root_length);
-  cpj_path_get_root(path_style, path, &path_root_length);
+  base_root_length = cpj_path_get_root(path_style, base_directory);
+  path_root_length = cpj_path_get_root(path_style, path);
   if (base_root_length != path_root_length ||
-      !cpj_path_is_string_equal(path_style, base_directory, path,
-        base_root_length, path_root_length)) {
+      !cpj_path_is_string_equal(
+        path_style, base_directory, path, base_root_length, path_root_length
+      )) {
     cpj_path_terminate_output(buffer, buffer_size, pos);
     return pos;
   }
 
   // Verify whether this is an absolute path. We need to know that since we can
   // remove all back-segments if it is.
-  absolute = cpj_path_is_root_absolute(path_style, base_directory,
-    base_root_length);
+  absolute =
+    cpj_path_is_root_absolute(path_style, base_directory, base_root_length);
 
   // Initialize our joined segments. This will allow us to use the internal
   // functions to skip until diverge and invisible. We only have one path in
@@ -800,8 +843,9 @@ size_t cpj_path_get_relative(enum cpj_path_style path_style,
 
   // Okay, now we skip until the segments diverge. We don't have anything to do
   // with the segments which are equal.
-  cpj_path_skip_segments_until_diverge(path_style, &bsj, &osj, absolute,
-    &base_available, &other_available);
+  cpj_path_skip_segments_until_diverge(
+    path_style, &bsj, &osj, absolute, &base_available, &other_available
+  );
 
   // Assume there is no output until we have got some. We will need this
   // information later on to remove trailing slashes or alternatively output a
@@ -845,8 +889,9 @@ size_t cpj_path_get_relative(enum cpj_path_style path_style,
 
       // Output the current segment and a separator. No need to worry about the
       // superfluous segment since it will be removed later on.
-      pos += cpj_path_output_sized(buffer, buffer_size, pos, osj.segment.begin,
-        osj.segment.size);
+      pos += cpj_path_output_sized(
+        buffer, buffer_size, pos, osj.segment.begin, osj.segment.size
+      );
       pos += cpj_path_output_separator(path_style, buffer, buffer_size, pos);
     } while (cpj_path_get_next_segment_joined(path_style, &osj));
   }
@@ -869,10 +914,12 @@ size_t cpj_path_get_relative(enum cpj_path_style path_style,
   return pos;
 }
 
-size_t cpj_path_join(enum cpj_path_style path_style, const char *path_a,
-  const char *path_b, char *buffer, size_t buffer_size)
+cpj_size_t cpj_path_join(
+  cpj_path_style_t path_style, const cpj_char_t *path_a,
+  const cpj_char_t *path_b, cpj_char_t *buffer, cpj_size_t buffer_size
+)
 {
-  const char *paths[3];
+  const cpj_char_t *paths[3];
 
   // This is simple. We will just create an array with the two paths which we
   // wish to join.
@@ -882,40 +929,49 @@ size_t cpj_path_join(enum cpj_path_style path_style, const char *path_a,
 
   // And then call the join and normalize function which will do the hard work
   // for us.
-  return cpj_path_join_and_normalize_multiple(path_style, paths, buffer,
-    buffer_size);
+  return cpj_path_join_and_normalize_multiple(
+    path_style, paths, buffer, buffer_size
+  );
 }
 
-size_t cpj_path_join_multiple(enum cpj_path_style path_style,
-  const char **paths, char *buffer, size_t buffer_size)
+cpj_size_t cpj_path_join_multiple(
+  cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
+  cpj_size_t buffer_size
+)
 {
   // We can just call the internal join and normalize function for this one,
   // since it will handle everything.
-  return cpj_path_join_and_normalize_multiple(path_style, paths, buffer,
-    buffer_size);
+  return cpj_path_join_and_normalize_multiple(
+    path_style, paths, buffer, buffer_size
+  );
 }
 
-void cpj_path_get_root(enum cpj_path_style path_style, const char *path,
-  size_t *length)
+cpj_size_t
+cpj_path_get_root(cpj_path_style_t path_style, const cpj_char_t *path)
 {
+  cpj_size_t length;
   // We use a different implementation here based on the configuration of the
   // library.
   if (path_style == CPJ_STYLE_WINDOWS) {
-    cpj_path_get_root_windows(path, length);
+    cpj_path_get_root_windows(path, &length);
   } else {
-    cpj_path_get_root_unix(path, length);
+    cpj_path_get_root_unix(path, &length);
   }
+  return length;
 }
 
-size_t cpj_path_change_root(enum cpj_path_style path_style, const char *path,
-  const char *new_root, char *buffer, size_t buffer_size)
+cpj_size_t cpj_path_change_root(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
+)
 {
-  const char *tail;
-  size_t root_length, path_length, tail_length, new_root_length, new_path_size;
+  const cpj_char_t *tail;
+  cpj_size_t root_length, path_length, tail_length, new_root_length,
+    new_path_size;
 
   // First we need to determine the actual size of the root which we will
   // change.
-  cpj_path_get_root(path_style, path, &root_length);
+  root_length = cpj_path_get_root(path_style, path);
 
   // Now we determine the sizes of the new root and the path. We need that to
   // determine the size of the part after the root (the tail).
@@ -929,8 +985,9 @@ size_t cpj_path_change_root(enum cpj_path_style path_style, const char *path,
   // We first output the tail and then the new root, that's because the source
   // path and the buffer may be overlapping. This way the root will not
   // overwrite the tail.
-  cpj_path_output_sized(buffer, buffer_size, new_root_length, tail,
-    tail_length);
+  cpj_path_output_sized(
+    buffer, buffer_size, new_root_length, tail, tail_length
+  );
   cpj_path_output_sized(buffer, buffer_size, 0, new_root, new_root_length);
 
   // Finally we calculate the size o the new path and terminate the output with
@@ -941,26 +998,28 @@ size_t cpj_path_change_root(enum cpj_path_style path_style, const char *path,
   return new_path_size;
 }
 
-bool cpj_path_is_absolute(enum cpj_path_style path_style, const char *path)
+bool cpj_path_is_absolute(cpj_path_style_t path_style, const cpj_char_t *path)
 {
-  size_t length;
+  cpj_size_t length;
 
   // We grab the root of the path. This root does not include the first
   // separator of a path.
-  cpj_path_get_root(path_style, path, &length);
+  length = cpj_path_get_root(path_style, path);
 
   // Now we can determine whether the root is absolute or not.
   return cpj_path_is_root_absolute(path_style, path, length);
 }
 
-bool cpj_path_is_relative(enum cpj_path_style path_style, const char *path)
+bool cpj_path_is_relative(cpj_path_style_t path_style, const cpj_char_t *path)
 {
   // The path is relative if it is not absolute.
   return !cpj_path_is_absolute(path_style, path);
 }
 
-void cpj_path_get_basename(enum cpj_path_style path_style, const char *path,
-  const char **basename, size_t *length)
+void cpj_path_get_basename(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t **basename, cpj_size_t *length
+)
 {
   struct cpj_segment segment;
 
@@ -984,11 +1043,13 @@ void cpj_path_get_basename(enum cpj_path_style path_style, const char *path,
   }
 }
 
-size_t cpj_path_change_basename(enum cpj_path_style path_style,
-  const char *path, const char *new_basename, char *buffer, size_t buffer_size)
+cpj_size_t cpj_path_change_basename(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
+)
 {
   struct cpj_segment segment;
-  size_t pos, root_size, new_basename_size;
+  cpj_size_t pos, root_size, new_basename_size;
 
   // First we try to get the last segment. We may only have a root without any
   // segments, in which case we will create one.
@@ -996,7 +1057,7 @@ size_t cpj_path_change_basename(enum cpj_path_style path_style,
 
     // So there is no segment in this path. First we grab the root and output
     // that. We are not going to modify the root in any way.
-    cpj_path_get_root(path_style, path, &root_size);
+    root_size = cpj_path_get_root(path_style, path);
     pos = cpj_path_output_sized(buffer, buffer_size, 0, path, root_size);
 
     // We have to trim the separators from the beginning of the new basename.
@@ -1014,14 +1075,17 @@ size_t cpj_path_change_basename(enum cpj_path_style path_style,
 
     // And then we trim the separators at the end of the basename until we reach
     // the first valid character.
-    while (new_basename_size > 0 && cpj_path_is_separator(path_style,
-                                      &new_basename[new_basename_size - 1])) {
+    while (
+      new_basename_size > 0 &&
+      cpj_path_is_separator(path_style, &new_basename[new_basename_size - 1])
+    ) {
       --new_basename_size;
     }
 
     // Now we will output the new basename after the root.
-    pos += cpj_path_output_sized(buffer, buffer_size, pos, new_basename,
-      new_basename_size);
+    pos += cpj_path_output_sized(
+      buffer, buffer_size, pos, new_basename, new_basename_size
+    );
 
     // And finally terminate the output and return the total size of the path.
     cpj_path_terminate_output(buffer, buffer_size, pos);
@@ -1030,12 +1094,14 @@ size_t cpj_path_change_basename(enum cpj_path_style path_style,
 
   // If there is a last segment we can just forward this call, which is fairly
   // easy.
-  return cpj_path_change_segment(path_style, &segment, new_basename, buffer,
-    buffer_size);
+  return cpj_path_change_segment(
+    path_style, &segment, new_basename, buffer, buffer_size
+  );
 }
 
-void cpj_path_get_dirname(enum cpj_path_style path_style, const char *path,
-  size_t *length)
+void cpj_path_get_dirname(
+  cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t *length
+)
 {
   struct cpj_segment segment;
 
@@ -1049,14 +1115,16 @@ void cpj_path_get_dirname(enum cpj_path_style path_style, const char *path,
 
   // We can now return the length from the beginning of the string up to the
   // beginning of the last segment.
-  *length = (size_t)(segment.begin - path);
+  *length = (cpj_size_t)(segment.begin - path);
 }
 
-bool cpj_path_get_extension(enum cpj_path_style path_style, const char *path,
-  const char **extension, size_t *length)
+bool cpj_path_get_extension(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t **extension, cpj_size_t *length
+)
 {
   struct cpj_segment segment;
-  const char *c;
+  const cpj_char_t *c;
 
   // We get the last segment of the path. The last segment will contain the
   // extension if there is any.
@@ -1071,7 +1139,7 @@ bool cpj_path_get_extension(enum cpj_path_style path_style, const char *path,
     if (*c == '.') {
       // Okay, we found an extension. We can stop looking now.
       *extension = c;
-      *length = (size_t)(segment.end - c);
+      *length = (cpj_size_t)(segment.end - c);
       return true;
     }
   }
@@ -1080,21 +1148,23 @@ bool cpj_path_get_extension(enum cpj_path_style path_style, const char *path,
   return false;
 }
 
-bool cpj_path_has_extension(enum cpj_path_style path_style, const char *path)
+bool cpj_path_has_extension(cpj_path_style_t path_style, const cpj_char_t *path)
 {
-  const char *extension;
-  size_t length;
+  const cpj_char_t *extension;
+  cpj_size_t length;
 
   // We just wrap the get_extension call which will then do the work for us.
   return cpj_path_get_extension(path_style, path, &extension, &length);
 }
 
-size_t cpj_path_change_extension(enum cpj_path_style path_style,
-  const char *path, const char *new_extension, char *buffer, size_t buffer_size)
+cpj_size_t cpj_path_change_extension(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
+)
 {
   struct cpj_segment segment;
-  const char *c, *old_extension;
-  size_t pos, root_size, trail_size, new_extension_size;
+  const cpj_char_t *c, *old_extension;
+  cpj_size_t pos, root_size, trail_size, new_extension_size;
 
   // First we try to get the last segment. We may only have a root without any
   // segments, in which case we will create one.
@@ -1103,7 +1173,7 @@ size_t cpj_path_change_extension(enum cpj_path_style path_style,
     // So there is no segment in this path. First we grab the root and output
     // that. We are not going to modify the root in any way. If there is no
     // root, this will end up with a root size 0, and nothing will be written.
-    cpj_path_get_root(path_style, path, &root_size);
+    root_size = cpj_path_get_root(path_style, path);
     pos = cpj_path_output_sized(buffer, buffer_size, 0, path, root_size);
 
     // Add a dot if the submitted value doesn't have any.
@@ -1127,8 +1197,10 @@ size_t cpj_path_change_extension(enum cpj_path_style path_style,
     }
   }
 
-  pos = cpj_path_output_sized(buffer, buffer_size, 0, segment.path,
-    (size_t)(old_extension - segment.path));
+  pos = cpj_path_output_sized(
+    buffer, buffer_size, 0, segment.path,
+    (cpj_size_t)(old_extension - segment.path)
+  );
 
   // If the new extension starts with a dot, we will skip that dot. We always
   // output exactly one dot before the extension. If the extension contains
@@ -1142,8 +1214,8 @@ size_t cpj_path_change_extension(enum cpj_path_style path_style,
   // extension. We must output this first, since the buffer may overlap with the
   // submitted path - and it would be overridden by longer extensions.
   new_extension_size = strlen(new_extension) + 1;
-  trail_size = cpj_path_output(buffer, buffer_size, pos + new_extension_size,
-    segment.end);
+  trail_size =
+    cpj_path_output(buffer, buffer_size, pos + new_extension_size, segment.end);
 
   // Finally we output the dot and the new extension. The new extension itself
   // doesn't contain the dot anymore, so we must output that first.
@@ -1160,36 +1232,42 @@ size_t cpj_path_change_extension(enum cpj_path_style path_style,
   return pos;
 }
 
-size_t cpj_path_normalize(enum cpj_path_style path_style, const char *path,
-  char *buffer, size_t buffer_size)
+cpj_size_t cpj_path_normalize(
+  cpj_path_style_t path_style, const cpj_char_t *path, cpj_char_t *buffer,
+  cpj_size_t buffer_size
+)
 {
-  const char *paths[2];
+  const cpj_char_t *paths[2];
 
   // Now we initialize the paths which we will normalize. Since this function
   // only supports submitting a single path, we will only add that one.
   paths[0] = path;
   paths[1] = NULL;
 
-  return cpj_path_join_and_normalize_multiple(path_style, paths, buffer,
-    buffer_size);
+  return cpj_path_join_and_normalize_multiple(
+    path_style, paths, buffer, buffer_size
+  );
 }
 
-size_t cpj_path_get_intersection(enum cpj_path_style path_style,
-  const char *path_base, const char *path_other)
+cpj_size_t cpj_path_get_intersection(
+  cpj_path_style_t path_style, const cpj_char_t *path_base,
+  const cpj_char_t *path_other
+)
 {
   bool absolute;
-  size_t base_root_length, other_root_length;
-  const char *end;
-  const char *paths_base[2], *paths_other[2];
+  cpj_size_t base_root_length, other_root_length;
+  const cpj_char_t *end;
+  const cpj_char_t *paths_base[2], *paths_other[2];
   struct cpj_segment_joined base, other;
 
   // We first compare the two roots. We just return zero if they are not equal.
   // This will also happen to return zero if the paths are mixed relative and
   // absolute.
-  cpj_path_get_root(path_style, path_base, &base_root_length);
-  cpj_path_get_root(path_style, path_other, &other_root_length);
-  if (!cpj_path_is_string_equal(path_style, path_base, path_other,
-        base_root_length, other_root_length)) {
+  base_root_length = cpj_path_get_root(path_style, path_base);
+  other_root_length = cpj_path_get_root(path_style, path_other);
+  if (!cpj_path_is_string_equal(
+        path_style, path_base, path_other, base_root_length, other_root_length
+      )) {
     return 0;
   }
 
@@ -1227,11 +1305,13 @@ size_t cpj_path_get_intersection(enum cpj_path_style path_style,
       break;
     }
 
-    if (!cpj_path_is_string_equal(path_style, base.segment.begin,
-          other.segment.begin, base.segment.size, other.segment.size)) {
+    if (!cpj_path_is_string_equal(
+          path_style, base.segment.begin, other.segment.begin,
+          base.segment.size, other.segment.size
+        )) {
       // So the content of those two segments are not equal. We will return the
       // size up to the beginning.
-      return (size_t)(end - path_base);
+      return (cpj_size_t)(end - path_base);
     }
 
     // Remember the end of the previous segment before we go to the next one.
@@ -1241,28 +1321,33 @@ size_t cpj_path_get_intersection(enum cpj_path_style path_style,
 
   // Now we calculate the length up to the last point where our paths pointed to
   // the same place.
-  return (size_t)(end - path_base);
+  return (cpj_size_t)(end - path_base);
 }
 
-bool cpj_path_get_first_segment(enum cpj_path_style path_style,
-  const char *path, struct cpj_segment *segment)
+bool cpj_path_get_first_segment(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  struct cpj_segment *segment
+)
 {
-  size_t length;
-  const char *segments;
+  cpj_size_t length;
+  const cpj_char_t *segments;
 
   // We skip the root since that's not part of the first segment. The root is
   // treated as a separate entity.
-  cpj_path_get_root(path_style, path, &length);
+  length = cpj_path_get_root(path_style, path);
   segments = path + length;
 
   // Now, after we skipped the root we can continue and find the actual segment
   // content.
-  return cpj_path_get_first_segment_without_root(path_style, path, segments,
-    segment);
+  return cpj_path_get_first_segment_without_root(
+    path_style, path, segments, segment
+  );
 }
 
-bool cpj_path_get_last_segment(enum cpj_path_style path_style, const char *path,
-  struct cpj_segment *segment)
+bool cpj_path_get_last_segment(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  struct cpj_segment *segment
+)
 {
   // We first grab the first segment. This might be our last segment as well,
   // but we don't know yet. There is no last segment if there is no first
@@ -1281,10 +1366,11 @@ bool cpj_path_get_last_segment(enum cpj_path_style path_style, const char *path,
   return true;
 }
 
-bool cpj_path_get_next_segment(enum cpj_path_style path_style,
-  struct cpj_segment *segment)
+bool cpj_path_get_next_segment(
+  cpj_path_style_t path_style, struct cpj_segment *segment
+)
 {
-  const char *c;
+  const cpj_char_t *c;
 
   // First we jump to the end of the previous segment. The first character must
   // be either a '\0' or a separator.
@@ -1314,16 +1400,17 @@ bool cpj_path_get_next_segment(enum cpj_path_style path_style,
   // the caller as well.
   c = cpj_path_find_next_stop(path_style, c);
   segment->end = c;
-  segment->size = (size_t)(c - segment->begin);
+  segment->size = (cpj_size_t)(c - segment->begin);
 
   // Tell the caller that we found a segment.
   return true;
 }
 
-bool cpj_path_get_previous_segment(enum cpj_path_style path_style,
-  struct cpj_segment *segment)
+bool cpj_path_get_previous_segment(
+  cpj_path_style_t path_style, struct cpj_segment *segment
+)
 {
-  const char *c;
+  const cpj_char_t *c;
 
   // The current position might point to the first character of the path, which
   // means there are no previous segments available.
@@ -1346,15 +1433,15 @@ bool cpj_path_get_previous_segment(enum cpj_path_style path_style,
   // We are guaranteed now that there is another segment, since we moved before
   // the previous separator and did not reach the segment path beginning.
   segment->end = c + 1;
-  segment->begin = cpj_path_find_previous_stop(path_style, segment->segments,
-    c);
-  segment->size = (size_t)(segment->end - segment->begin);
+  segment
+    ->begin = cpj_path_find_previous_stop(path_style, segment->segments, c);
+  segment->size = (cpj_size_t)(segment->end - segment->begin);
 
   return true;
 }
 
-enum cpj_segment_type cpj_path_get_segment_type(
-  const struct cpj_segment *segment)
+enum cpj_segment_type
+cpj_path_get_segment_type(const struct cpj_segment *segment)
 {
   // We just make a string comparison with the segment contents and return the
   // appropriate type.
@@ -1367,9 +1454,9 @@ enum cpj_segment_type cpj_path_get_segment_type(
   return CPJ_NORMAL;
 }
 
-bool cpj_path_is_separator(enum cpj_path_style path_style, const char *str)
+bool cpj_path_is_separator(cpj_path_style_t path_style, const cpj_char_t *str)
 {
-  const char *c;
+  const cpj_char_t *c;
 
   // We loop over all characters in the read symbols.
   c = separators[path_style];
@@ -1384,16 +1471,19 @@ bool cpj_path_is_separator(enum cpj_path_style path_style, const char *str)
   return false;
 }
 
-size_t cpj_path_change_segment(enum cpj_path_style path_style,
-  struct cpj_segment *segment, const char *value, char *buffer,
-  size_t buffer_size)
+cpj_size_t cpj_path_change_segment(
+  cpj_path_style_t path_style, struct cpj_segment *segment,
+  const cpj_char_t *value, cpj_char_t *buffer, cpj_size_t buffer_size
+)
 {
-  size_t pos, value_size, tail_size;
+  cpj_size_t pos, value_size, tail_size;
 
   // First we have to output the head, which is the whole string up to the
   // beginning of the segment. This part of the path will just stay the same.
-  pos = cpj_path_output_sized(buffer, buffer_size, 0, segment->path,
-    (size_t)(segment->begin - segment->path));
+  pos = cpj_path_output_sized(
+    buffer, buffer_size, 0, segment->path,
+    (cpj_size_t)(segment->begin - segment->path)
+  );
 
   // In order to trip the submitted value, we will skip any separator at the
   // beginning of it and behave as if it was never there.
@@ -1423,8 +1513,9 @@ size_t cpj_path_change_segment(enum cpj_path_style path_style,
   // Now we output the tail. We have to do that, because if the buffer and the
   // source are overlapping we would override the tail if the value is
   // increasing in length.
-  cpj_path_output_sized(buffer, buffer_size, pos + value_size, segment->end,
-    tail_size);
+  cpj_path_output_sized(
+    buffer, buffer_size, pos + value_size, segment->end, tail_size
+  );
 
   // Finally we can output the value in the middle of the head and the tail,
   // where we have enough space to fit the whole trimmed value.
@@ -1439,10 +1530,10 @@ size_t cpj_path_change_segment(enum cpj_path_style path_style,
   return pos;
 }
 
-enum cpj_path_style cpj_path_guess_style(const char *path)
+cpj_path_style_t cpj_path_guess_style(const cpj_char_t *path)
 {
-  const char *c;
-  size_t root_length;
+  const cpj_char_t *c;
+  cpj_size_t root_length;
   struct cpj_segment segment;
 
   // First we determine the root. Only windows roots can be longer than a single

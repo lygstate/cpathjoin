@@ -8,7 +8,7 @@ Configures which path style is used.
 
 ## Description
 ```c
-void cpj_path_set_style(enum cpj_path_style style);
+void cpj_path_set_style(cpj_path_style_t style);
 ```
 
 ## Description

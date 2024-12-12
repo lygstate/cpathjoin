@@ -6,8 +6,8 @@
 
 int root_change_without_root(void)
 {
-  size_t length;
-  char buffer[FILENAME_MAX] = "hello\\world.txt";
+  cpj_size_t length;
+  cpj_char_t buffer[FILENAME_MAX] = "hello\\world.txt";
 
   length = cpj_path_change_root(CPJ_STYLE_WINDOWS, buffer, "D:\\", buffer,
     sizeof(buffer));
@@ -25,8 +25,8 @@ int root_change_without_root(void)
 
 int root_change_overlapping(void)
 {
-  size_t length;
-  char buffer[FILENAME_MAX] = "C:\\hello\\world.txt";
+  cpj_size_t length;
+  cpj_char_t buffer[FILENAME_MAX] = "C:\\hello\\world.txt";
 
   length = cpj_path_change_root(CPJ_STYLE_WINDOWS, buffer, "D:\\path\\", buffer,
     sizeof(buffer));
@@ -44,8 +44,8 @@ int root_change_overlapping(void)
 
 int root_change_separators(void)
 {
-  size_t length;
-  char buffer[FILENAME_MAX];
+  cpj_size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
 
   length = cpj_path_change_root(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "D:\\path\\", buffer,
     sizeof(buffer));
@@ -63,8 +63,8 @@ int root_change_separators(void)
 
 int root_change_empty(void)
 {
-  size_t length;
-  char buffer[FILENAME_MAX];
+  cpj_size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
 
   length = cpj_path_change_root(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "", buffer,
     sizeof(buffer));
@@ -82,8 +82,8 @@ int root_change_empty(void)
 
 int root_change_simple(void)
 {
-  size_t length;
-  char buffer[FILENAME_MAX];
+  cpj_size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
 
   length = cpj_path_change_root(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "D:\\", buffer,
     sizeof(buffer));
@@ -101,9 +101,9 @@ int root_change_simple(void)
 
 int root_relative_windows(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "..\\hello\\world.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "..\\hello\\world.txt");
 
   if (length != 0) {
     return EXIT_FAILURE;
@@ -114,9 +114,9 @@ int root_relative_windows(void)
 
 int root_relative_drive(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:test.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:test.txt");
 
   if (length != 2) {
     return EXIT_FAILURE;
@@ -127,9 +127,9 @@ int root_relative_drive(void)
 
 int root_device_question_mark(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\?\\mydevice\\test", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\?\\mydevice\\test");
 
   if (length != 4) {
     return EXIT_FAILURE;
@@ -140,9 +140,9 @@ int root_device_question_mark(void)
 
 int root_device_dot(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\.\\mydevice\\test", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\.\\mydevice\\test");
 
   if (length != 4) {
     return EXIT_FAILURE;
@@ -153,9 +153,9 @@ int root_device_dot(void)
 
 int root_device_unc(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\.\\UNC\\LOCALHOST\\c$\\temp\\test-file.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\.\\UNC\\LOCALHOST\\c$\\temp\\test-file.txt");
 
   if (length != 4) {
     return EXIT_FAILURE;
@@ -166,9 +166,9 @@ int root_device_unc(void)
 
 int root_unc(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\server\\folder\\data", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\server\\folder\\data");
 
   if (length != 16) {
     return EXIT_FAILURE;
@@ -179,9 +179,9 @@ int root_unc(void)
 
 int root_absolute_drive(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:\\test.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:\\test.txt");
 
   if (length != 3) {
     return EXIT_FAILURE;
@@ -192,9 +192,9 @@ int root_absolute_drive(void)
 
 int root_unix_drive(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_UNIX, "C:\\test.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_UNIX, "C:\\test.txt");
 
   if (length != 0) {
     return EXIT_FAILURE;
@@ -205,9 +205,9 @@ int root_unix_drive(void)
 
 int root_unix_backslash(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_UNIX, "\\folder\\", &length);
+  length = cpj_path_get_root(CPJ_STYLE_UNIX, "\\folder\\");
 
   if (length != 0) {
     return EXIT_FAILURE;
@@ -218,9 +218,9 @@ int root_unix_backslash(void)
 
 int root_windows_slash(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "/test.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "/test.txt");
 
   if (length != 1) {
     return EXIT_FAILURE;
@@ -231,9 +231,9 @@ int root_windows_slash(void)
 
 int root_windows_backslash(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\test.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\test.txt");
 
   if (length != 1) {
     return EXIT_FAILURE;
@@ -244,9 +244,9 @@ int root_windows_backslash(void)
 
 int root_relative(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_UNIX, "test.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_UNIX, "test.txt");
 
   if (length != 0) {
     return EXIT_FAILURE;
@@ -257,9 +257,9 @@ int root_relative(void)
 
 int root_absolute(void)
 {
-  size_t length;
+  cpj_size_t length;
 
-  cpj_path_get_root(CPJ_STYLE_UNIX, "/test.txt", &length);
+  length = cpj_path_get_root(CPJ_STYLE_UNIX, "/test.txt");
 
   if (length != 1) {
     return EXIT_FAILURE;

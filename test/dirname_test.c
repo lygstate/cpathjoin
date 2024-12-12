@@ -4,8 +4,8 @@
 
 int dirname_relative(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "../one/two.txt";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -19,8 +19,8 @@ int dirname_relative(void)
 
 int dirname_three_segments(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "/one/two/three.txt";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -34,8 +34,8 @@ int dirname_three_segments(void)
 
 int dirname_root(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "/";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -49,8 +49,8 @@ int dirname_root(void)
 
 int dirname_special_directories(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "..";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -71,8 +71,8 @@ int dirname_special_directories(void)
 
 int dirname_no_separators(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "file_name";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -86,8 +86,8 @@ int dirname_no_separators(void)
 
 int dirname_trailing_separators(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "/my/path.txt////";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -101,8 +101,8 @@ int dirname_trailing_separators(void)
 
 int dirname_trailing_separator(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "/my/path.txt/";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -116,8 +116,8 @@ int dirname_trailing_separator(void)
 
 int dirname_empty(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);
@@ -131,8 +131,8 @@ int dirname_empty(void)
 
 int dirname_simple(void)
 {
-  const char *path;
-  size_t length;
+  const cpj_char_t *path;
+  cpj_size_t length;
 
   path = "/my/path.txt";
   cpj_path_get_dirname(CPJ_STYLE_UNIX, path, &length);

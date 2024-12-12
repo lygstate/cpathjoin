@@ -6,8 +6,8 @@
 
 int extension_change_with_trailing_slash(void)
 {
-  char buffer[FILENAME_MAX] = "/folder/file.txt/";
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX] = "/folder/file.txt/";
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_UNIX, buffer, ".md", buffer, sizeof(buffer));
   if (n != 16) {
@@ -23,8 +23,8 @@ int extension_change_with_trailing_slash(void)
 
 int extension_change_hidden_file(void)
 {
-  char buffer[FILENAME_MAX] = "/folder/.hidden_file.txt";
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX] = "/folder/.hidden_file.txt";
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_UNIX, buffer, ".md", buffer, sizeof(buffer));
   if (n != 23) {
@@ -40,8 +40,8 @@ int extension_change_hidden_file(void)
 
 int extension_change_overlap_long(void)
 {
-  char buffer[FILENAME_MAX] = "/test.txt/";
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX] = "/test.txt/";
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_UNIX, buffer, ".text", buffer, sizeof(buffer));
   if (n != 11) {
@@ -57,8 +57,8 @@ int extension_change_overlap_long(void)
 
 int extension_change_overlap(void)
 {
-  char buffer[FILENAME_MAX] = "/test.txt/";
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX] = "/test.txt/";
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_UNIX, buffer, ".md", buffer, sizeof(buffer));
   if (n != 9) {
@@ -74,8 +74,8 @@ int extension_change_overlap(void)
 
 int extension_change_with_dot(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_UNIX, "/test.txt", ".md", buffer, sizeof(buffer));
   if (n != 8) {
@@ -91,8 +91,8 @@ int extension_change_with_dot(void)
 
 int extension_change_remove(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_UNIX, "/test.txt", "", buffer, sizeof(buffer));
   if (n != 5) {
@@ -108,8 +108,8 @@ int extension_change_remove(void)
 
 int extension_change_no_extension(void)
 {
-  char buffer[FILENAME_MAX] = "C:\\file";
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX] = "C:\\file";
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_WINDOWS, buffer, ".md", buffer, sizeof(buffer));
   if (n != 10) {
@@ -125,8 +125,8 @@ int extension_change_no_extension(void)
 
 int extension_change_no_basename(void)
 {
-  char buffer[FILENAME_MAX] = "C:\\";
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX] = "C:\\";
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_WINDOWS, buffer, ".md", buffer, sizeof(buffer));
   if (n != 6) {
@@ -142,8 +142,8 @@ int extension_change_no_basename(void)
 
 int extension_change_simple(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t n;
 
   n = cpj_path_change_extension(CPJ_STYLE_UNIX, "/test.txt", "md", buffer, sizeof(buffer));
   if (n != 8) {
@@ -186,8 +186,8 @@ int extension_check_simple(void)
 
 int extension_get_multiple(void)
 {
-  const char *path, *extension;
-  size_t length;
+  const cpj_char_t *path, *extension;
+  cpj_size_t length;
 
   path = "/my/path.abc.txt.tests";
   if (!cpj_path_get_extension(CPJ_STYLE_UNIX, path, &extension, &length)) {
@@ -207,8 +207,8 @@ int extension_get_multiple(void)
 
 int extension_get_last(void)
 {
-  const char *path, *extension;
-  size_t length;
+  const cpj_char_t *path, *extension;
+  cpj_size_t length;
 
   path = "/my/path.";
   if (!cpj_path_get_extension(CPJ_STYLE_UNIX, path, &extension, &length)) {
@@ -228,8 +228,8 @@ int extension_get_last(void)
 
 int extension_get_first(void)
 {
-  const char *path, *extension;
-  size_t length;
+  const cpj_char_t *path, *extension;
+  cpj_size_t length;
 
   path = "/my/.path";
   if (!cpj_path_get_extension(CPJ_STYLE_UNIX, path, &extension, &length)) {
@@ -249,8 +249,8 @@ int extension_get_first(void)
 
 int extension_get_without(void)
 {
-  const char *path, *extension;
-  size_t length;
+  const cpj_char_t *path, *extension;
+  cpj_size_t length;
 
   path = "/my/path";
   if (cpj_path_get_extension(CPJ_STYLE_UNIX, path, &extension, &length)) {
@@ -262,8 +262,8 @@ int extension_get_without(void)
 
 int extension_get_simple(void)
 {
-  const char *path, *extension;
-  size_t length;
+  const cpj_char_t *path, *extension;
+  cpj_size_t length;
 
   path = "/my/path.txt";
   if (!cpj_path_get_extension(CPJ_STYLE_UNIX, path, &extension, &length)) {

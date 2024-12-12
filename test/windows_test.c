@@ -5,8 +5,8 @@
 
 int windows_root_empty(void)
 {
-  size_t size;
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "", &size);
+  cpj_size_t size;
+  size = cpj_path_get_root(CPJ_STYLE_WINDOWS, "");
   if (size != 0) {
     return EXIT_FAILURE;
   }
@@ -16,8 +16,8 @@ int windows_root_empty(void)
 
 int windows_root_backslash(void)
 {
-  size_t size;
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\no_network_path\\hello", &size);
+  cpj_size_t size;
+  size = cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\no_network_path\\hello");
   if (size != 1) {
     return EXIT_FAILURE;
   }
@@ -37,8 +37,8 @@ int windows_intersection_case(void)
 
 int windows_get_root_relative(void)
 {
-  size_t size;
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:file.txt", &size);
+  cpj_size_t size;
+  size = cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:file.txt");
 
   if (size != 2) {
     return EXIT_FAILURE;
@@ -49,8 +49,8 @@ int windows_get_root_relative(void)
 
 int windows_get_root_separator(void)
 {
-  size_t size;
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:/this/is/a/test", &size);
+  cpj_size_t size;
+  size = cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:/this/is/a/test");
 
   if (size != 3) {
     return EXIT_FAILURE;
@@ -61,9 +61,9 @@ int windows_get_root_separator(void)
 
 int windows_get_unc_root(void)
 {
-  size_t size;
+  cpj_size_t size;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\server\\share\\test.txt", &size);
+  size = cpj_path_get_root(CPJ_STYLE_WINDOWS, "\\\\server\\share\\test.txt");
 
   if (size != 15) {
     return EXIT_FAILURE;
@@ -74,9 +74,9 @@ int windows_get_unc_root(void)
 
 int windows_get_root(void)
 {
-  size_t size;
+  cpj_size_t size;
 
-  cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:\\test.txt", &size);
+  size = cpj_path_get_root(CPJ_STYLE_WINDOWS, "C:\\test.txt");
 
   if (size != 3) {
     return EXIT_FAILURE;

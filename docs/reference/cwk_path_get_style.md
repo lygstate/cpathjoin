@@ -8,7 +8,7 @@ Gets the path style configuration..
 
 ## Description
 ```c
-enum cpj_path_style cpj_path_get_style(void);
+cpj_path_style_t cpj_path_get_style(void);
 ```
 
 ## Description

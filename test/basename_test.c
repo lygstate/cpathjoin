@@ -6,8 +6,8 @@
 
 int basename_change_trim_only_root(void)
 {
-  size_t n;
-  char buffer[FILENAME_MAX];
+  cpj_size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
 
   n = cpj_path_change_basename(CPJ_STYLE_UNIX, "/", "///another.txt///", buffer,
     sizeof(buffer));
@@ -24,8 +24,8 @@ int basename_change_trim_only_root(void)
 
 int basename_change_trim(void)
 {
-  size_t n;
-  char buffer[FILENAME_MAX];
+  cpj_size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
 
   n = cpj_path_change_basename(CPJ_STYLE_UNIX, "/test.txt", "///another.txt///", buffer,
     sizeof(buffer));
@@ -42,8 +42,8 @@ int basename_change_trim(void)
 
 int basename_change_relative(void)
 {
-  size_t n;
-  char buffer[FILENAME_MAX];
+  cpj_size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
 
   n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "../test.txt", "another.txt", buffer,
     sizeof(buffer));
@@ -60,8 +60,8 @@ int basename_change_relative(void)
 
 int basename_change_empty_basename(void)
 {
-  size_t n;
-  char buffer[FILENAME_MAX];
+  cpj_size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
 
   n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "C:\\test.txt", "", buffer, sizeof(buffer));
   if (n != 3) {
@@ -77,8 +77,8 @@ int basename_change_empty_basename(void)
 
 int basename_change_only_root(void)
 {
-  size_t n;
-  char buffer[FILENAME_MAX];
+  cpj_size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
 
   n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "C:\\", "another.txt", buffer, sizeof(buffer));
   if (n != 14) {
@@ -94,8 +94,8 @@ int basename_change_only_root(void)
 
 int basename_change_empty_path(void)
 {
-  size_t n;
-  char buffer[FILENAME_MAX];
+  cpj_size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
 
   n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "", "another.txt", buffer, sizeof(buffer));
   if (n != 11) {
@@ -111,8 +111,8 @@ int basename_change_empty_path(void)
 
 int basename_change_simple(void)
 {
-  size_t n;
-  char buffer[FILENAME_MAX];
+  cpj_size_t n;
+  cpj_char_t buffer[FILENAME_MAX];
 
   n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "C:\\test.txt", "another.txt", buffer,
     sizeof(buffer));
@@ -129,8 +129,8 @@ int basename_change_simple(void)
 
 int basename_windows(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "C:\\path\\test.txt";
   cpj_path_get_basename(CPJ_STYLE_WINDOWS, path, &basename, &length);
@@ -148,8 +148,8 @@ int basename_windows(void)
 
 int basename_root(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "/";
   cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
@@ -167,8 +167,8 @@ int basename_root(void)
 
 int basename_special_directories(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "..";
   cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
@@ -197,8 +197,8 @@ int basename_special_directories(void)
 
 int basename_no_separators(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "file_name";
   cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
@@ -216,8 +216,8 @@ int basename_no_separators(void)
 
 int basename_trailing_separators(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "/my/path.txt////";
   cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
@@ -235,8 +235,8 @@ int basename_trailing_separators(void)
 
 int basename_trailing_separator(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "/my/path.txt/";
   cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
@@ -254,8 +254,8 @@ int basename_trailing_separator(void)
 
 int basename_empty(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "";
   cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
@@ -273,8 +273,8 @@ int basename_empty(void)
 
 int basename_simple(void)
 {
-  const char *path, *basename;
-  size_t length;
+  const cpj_char_t *path, *basename;
+  cpj_size_t length;
 
   path = "/my/path.txt";
   cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);

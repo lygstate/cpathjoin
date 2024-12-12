@@ -32,6 +32,9 @@ extern "C"
 {
 #endif
 
+typedef char cpj_char_t;
+typedef size_t cpj_size_t;
+
 /**
  * A segment represents a single component of a path. For instance, on linux a
  * path might look like this "/var/log/", which consists of two segments "var"
@@ -39,10 +42,10 @@ extern "C"
  */
 struct cpj_segment
 {
-  const char *path;
-  const char *segments;
-  const char *begin;
-  const char *end;
+  const cpj_char_t *path;
+  const cpj_char_t *segments;
+  const cpj_char_t *begin;
+  const cpj_char_t *end;
   size_t size;
 };
 
@@ -65,11 +68,11 @@ enum cpj_segment_type
  * @brief Determines the style which is used for the path parsing and
  * generation.
  */
-enum cpj_path_style
+typedef enum
 {
   CPJ_STYLE_WINDOWS,
   CPJ_STYLE_UNIX
-};
+} cpj_path_style_t;
 
 /**
  * @brief Generates an absolute path based on a base.
@@ -91,8 +94,10 @@ enum cpj_path_style
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the new absolute path.
  */
-CPJ_PUBLIC size_t cpj_path_get_absolute(enum cpj_path_style path_style,
-  const char *base, const char *path, char *buffer, size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_get_absolute(
+  cpj_path_style_t path_style, const cpj_char_t *base, const cpj_char_t *path,
+  cpj_char_t *buffer, cpj_size_t buffer_size
+);
 
 /**
  * @brief Generates a relative path based on a base.
@@ -114,9 +119,10 @@ CPJ_PUBLIC size_t cpj_path_get_absolute(enum cpj_path_style path_style,
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the full path.
  */
-CPJ_PUBLIC size_t cpj_path_get_relative(enum cpj_path_style path_style,
-  const char *base_directory, const char *path, char *buffer,
-  size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_get_relative(
+  cpj_path_style_t path_style, const cpj_char_t *base_directory,
+  const cpj_char_t *path, cpj_char_t *buffer, cpj_size_t buffer_size
+);
 
 /**
  * @brief Joins two paths together.
@@ -138,8 +144,10 @@ CPJ_PUBLIC size_t cpj_path_get_relative(enum cpj_path_style path_style,
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the full, combined path.
  */
-CPJ_PUBLIC size_t cpj_path_join(enum cpj_path_style path_style,
-  const char *path_a, const char *path_b, char *buffer, size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_join(
+  cpj_path_style_t path_style, const cpj_char_t *path_a,
+  const cpj_char_t *path_b, cpj_char_t *buffer, cpj_size_t buffer_size
+);
 
 /**
  * @brief Joins multiple paths together.
@@ -161,8 +169,10 @@ CPJ_PUBLIC size_t cpj_path_join(enum cpj_path_style path_style,
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the full, combined path.
  */
-CPJ_PUBLIC size_t cpj_path_join_multiple(enum cpj_path_style path_style,
-  const char **paths, char *buffer, size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_join_multiple(
+  cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
+  cpj_size_t buffer_size
+);
 
 /**
  * @brief Determines the root of a path.
@@ -174,10 +184,10 @@ CPJ_PUBLIC size_t cpj_path_join_multiple(enum cpj_path_style path_style,
  * @param path_style Style depending on the operating system. So this should
  * detect whether we should use windows or unix paths.
  * @param path The path which will be inspected.
- * @param length The output of the root length.
+ * @return The inspected root length of the path.
  */
-CPJ_PUBLIC void cpj_path_get_root(enum cpj_path_style path_style,
-  const char *path, size_t *length);
+CPJ_PUBLIC cpj_size_t
+cpj_path_get_root(cpj_path_style_t path_style, const cpj_char_t *path);
 
 /**
  * @brief Changes the root of a path.
@@ -198,8 +208,10 @@ CPJ_PUBLIC void cpj_path_get_root(enum cpj_path_style path_style,
  * written to.
  * @return Returns the total amount of characters of the new path.
  */
-CPJ_PUBLIC size_t cpj_path_change_root(enum cpj_path_style path_style,
-  const char *path, const char *new_root, char *buffer, size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_change_root(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
+);
 
 /**
  * @brief Determine whether the path is absolute or not.
@@ -212,8 +224,8 @@ CPJ_PUBLIC size_t cpj_path_change_root(enum cpj_path_style path_style,
  * @param path The path which will be checked.
  * @return Returns true if the path is absolute or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_is_absolute(enum cpj_path_style path_style,
-  const char *path);
+CPJ_PUBLIC bool
+cpj_path_is_absolute(cpj_path_style_t path_style, const cpj_char_t *path);
 
 /**
  * @brief Determine whether the path is relative or not.
@@ -226,8 +238,8 @@ CPJ_PUBLIC bool cpj_path_is_absolute(enum cpj_path_style path_style,
  * @param path The path which will be checked.
  * @return Returns true if the path is relative or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_is_relative(enum cpj_path_style path_style,
-  const char *path);
+CPJ_PUBLIC bool
+cpj_path_is_relative(cpj_path_style_t path_style, const cpj_char_t *path);
 
 /**
  * @brief Gets the basename of a file path.
@@ -246,8 +258,10 @@ CPJ_PUBLIC bool cpj_path_is_relative(enum cpj_path_style path_style,
  * @param length The output of the length of the basename. This may be
  * null if not required.
  */
-CPJ_PUBLIC void cpj_path_get_basename(enum cpj_path_style path_style,
-  const char *path, const char **basename, size_t *length);
+CPJ_PUBLIC void cpj_path_get_basename(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t **basename, cpj_size_t *length
+);
 
 /**
  * @brief Changes the basename of a file path.
@@ -269,8 +283,10 @@ CPJ_PUBLIC void cpj_path_get_basename(enum cpj_path_style path_style,
  * @return Returns the size which the complete new path would have if it was
  * not truncated.
  */
-CPJ_PUBLIC size_t cpj_path_change_basename(enum cpj_path_style path_style,
-  const char *path, const char *new_basename, char *buffer, size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_change_basename(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
+);
 
 /**
  * @brief Gets the dirname of a file path.
@@ -285,8 +301,9 @@ CPJ_PUBLIC size_t cpj_path_change_basename(enum cpj_path_style path_style,
  * @param path The path which will be inspected.
  * @param length The length of the dirname.
  */
-CPJ_PUBLIC void cpj_path_get_dirname(enum cpj_path_style path_style,
-  const char *path, size_t *length);
+CPJ_PUBLIC void cpj_path_get_dirname(
+  cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t *length
+);
 
 /**
  * @brief Gets the extension of a file path.
@@ -305,8 +322,10 @@ CPJ_PUBLIC void cpj_path_get_dirname(enum cpj_path_style path_style,
  * @param length The output of the length of the extension.
  * @return Returns true if an extension is found or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_get_extension(enum cpj_path_style path_style,
-  const char *path, const char **extension, size_t *length);
+CPJ_PUBLIC bool cpj_path_get_extension(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t **extension, cpj_size_t *length
+);
 
 /**
  * @brief Determines whether the file path has an extension.
@@ -319,8 +338,8 @@ CPJ_PUBLIC bool cpj_path_get_extension(enum cpj_path_style path_style,
  * @param path The path which will be inspected.
  * @return Returns true if the path has an extension or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_has_extension(enum cpj_path_style path_style,
-  const char *path);
+CPJ_PUBLIC bool
+cpj_path_has_extension(cpj_path_style_t path_style, const cpj_char_t *path);
 
 /**
  * @brief Changes the extension of a file path.
@@ -345,9 +364,10 @@ CPJ_PUBLIC bool cpj_path_has_extension(enum cpj_path_style path_style,
  * @return Returns the total size which the output would have if it was not
  * truncated.
  */
-CPJ_PUBLIC size_t cpj_path_change_extension(enum cpj_path_style path_style,
-  const char *path, const char *new_extension, char *buffer,
-  size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_change_extension(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  const cpj_char_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
+);
 
 /**
  * @brief Creates a normalized version of the path.
@@ -374,8 +394,10 @@ CPJ_PUBLIC size_t cpj_path_change_extension(enum cpj_path_style path_style,
  * @return The size which the complete normalized path has if it was not
  * truncated.
  */
-CPJ_PUBLIC size_t cpj_path_normalize(enum cpj_path_style path_style,
-  const char *path, char *buffer, size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_normalize(
+  cpj_path_style_t path_style, const cpj_char_t *path, cpj_char_t *buffer,
+  cpj_size_t buffer_size
+);
 
 /**
  * @brief Finds common portions in two paths.
@@ -390,8 +412,10 @@ CPJ_PUBLIC size_t cpj_path_normalize(enum cpj_path_style path_style,
  * @param path_other The other path which will compared with the base path.
  * @return Returns the number of characters which are common in the base path.
  */
-CPJ_PUBLIC size_t cpj_path_get_intersection(enum cpj_path_style path_style,
-  const char *path_base, const char *path_other);
+CPJ_PUBLIC cpj_size_t cpj_path_get_intersection(
+  cpj_path_style_t path_style, const cpj_char_t *path_base,
+  const cpj_char_t *path_other
+);
 
 /**
  * @brief Gets the first segment of a path.
@@ -406,8 +430,10 @@ CPJ_PUBLIC size_t cpj_path_get_intersection(enum cpj_path_style path_style,
  * @param segment The segment which will be extracted.
  * @return Returns true if there is a segment or false if there is none.
  */
-CPJ_PUBLIC bool cpj_path_get_first_segment(enum cpj_path_style path_style,
-  const char *path, struct cpj_segment *segment);
+CPJ_PUBLIC bool cpj_path_get_first_segment(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  struct cpj_segment *segment
+);
 
 /**
  * @brief Gets the last segment of the path.
@@ -424,8 +450,10 @@ CPJ_PUBLIC bool cpj_path_get_first_segment(enum cpj_path_style path_style,
  * @param segment The segment which will be extracted.
  * @return Returns true if there is a segment or false if there is none.
  */
-CPJ_PUBLIC bool cpj_path_get_last_segment(enum cpj_path_style path_style,
-  const char *path, struct cpj_segment *segment);
+CPJ_PUBLIC bool cpj_path_get_last_segment(
+  cpj_path_style_t path_style, const cpj_char_t *path,
+  struct cpj_segment *segment
+);
 
 /**
  * @brief Advances to the next segment.
@@ -439,8 +467,9 @@ CPJ_PUBLIC bool cpj_path_get_last_segment(enum cpj_path_style path_style,
  * @param segment The current segment which will be advanced to the next one.
  * @return Returns true if another segment was found or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_get_next_segment(enum cpj_path_style path_style,
-  struct cpj_segment *segment);
+CPJ_PUBLIC bool cpj_path_get_next_segment(
+  cpj_path_style_t path_style, struct cpj_segment *segment
+);
 
 /**
  * @brief Moves to the previous segment.
@@ -455,8 +484,9 @@ CPJ_PUBLIC bool cpj_path_get_next_segment(enum cpj_path_style path_style,
  * @return Returns true if there is a segment before this one or false
  * otherwise.
  */
-CPJ_PUBLIC bool cpj_path_get_previous_segment(enum cpj_path_style path_style,
-  struct cpj_segment *segment);
+CPJ_PUBLIC bool cpj_path_get_previous_segment(
+  cpj_path_style_t path_style, struct cpj_segment *segment
+);
 
 /**
  * @brief Gets the type of the submitted path segment.
@@ -469,8 +499,8 @@ CPJ_PUBLIC bool cpj_path_get_previous_segment(enum cpj_path_style path_style,
  * @param segment The segment which will be inspected.
  * @return Returns the type of the segment.
  */
-CPJ_PUBLIC enum cpj_segment_type cpj_path_get_segment_type(
-  const struct cpj_segment *segment);
+CPJ_PUBLIC enum cpj_segment_type
+cpj_path_get_segment_type(const struct cpj_segment *segment);
 
 /**
  * @brief Changes the content of a segment.
@@ -491,9 +521,10 @@ CPJ_PUBLIC enum cpj_segment_type cpj_path_get_segment_type(
  * @return Returns the total size which would have been written if the output
  * was not truncated.
  */
-CPJ_PUBLIC size_t cpj_path_change_segment(enum cpj_path_style path_style,
-  struct cpj_segment *segment, const char *value, char *buffer,
-  size_t buffer_size);
+CPJ_PUBLIC cpj_size_t cpj_path_change_segment(
+  cpj_path_style_t path_style, struct cpj_segment *segment,
+  const cpj_char_t *value, cpj_char_t *buffer, cpj_size_t buffer_size
+);
 
 /**
  * @brief Checks whether the submitted pointer points to a separator.
@@ -508,8 +539,8 @@ CPJ_PUBLIC size_t cpj_path_change_segment(enum cpj_path_style path_style,
  * @param str A pointer to a string.
  * @return Returns true if it is a separator, or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_is_separator(enum cpj_path_style path_style,
-  const char *str);
+CPJ_PUBLIC bool
+cpj_path_is_separator(cpj_path_style_t path_style, const cpj_char_t *str);
 
 /**
  * @brief Guesses the path style.
@@ -521,7 +552,7 @@ CPJ_PUBLIC bool cpj_path_is_separator(enum cpj_path_style path_style,
  * @param path The path which will be inspected.
  * @return Returns the style which is most likely used for the path.
  */
-CPJ_PUBLIC enum cpj_path_style cpj_path_guess_style(const char *path);
+CPJ_PUBLIC cpj_path_style_t cpj_path_guess_style(const cpj_char_t *path);
 
 #ifdef __cplusplus
 } // extern "C"

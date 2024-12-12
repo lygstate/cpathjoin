@@ -8,9 +8,9 @@
 
 int normalize_forward_slashes(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "C:/this/is/a/test/path";
   strcpy(result, input);
@@ -25,9 +25,9 @@ int normalize_forward_slashes(void)
 
 int normalize_back_after_root(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "C:\\..\\this\\is\\a\\test\\path";
   strcpy(result, input);
@@ -42,9 +42,9 @@ int normalize_back_after_root(void)
 
 int normalize_only_separators(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "////";
   strcpy(result, input);
@@ -59,9 +59,9 @@ int normalize_only_separators(void)
 
 int normalize_empty(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "test/..";
   strcpy(result, input);
@@ -76,9 +76,9 @@ int normalize_empty(void)
 
 int normalize_overlap(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "/var/./logs/.//test/..//..//////";
   strcpy(result, input);
@@ -93,9 +93,9 @@ int normalize_overlap(void)
 
 int normalize_mixed(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "/var/./logs/.//test/..//..//////";
   expected = "/var";
@@ -109,9 +109,9 @@ int normalize_mixed(void)
 
 int normalize_remove_current(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "/var/././././";
   expected = "/var";
@@ -125,9 +125,9 @@ int normalize_remove_current(void)
 
 int normalize_double_separator(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "/var////logs//test/";
   expected = "/var/logs/test";
@@ -141,10 +141,10 @@ int normalize_double_separator(void)
 
 int normalize_terminated(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
-  size_t i, expected_size, n;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
+  cpj_size_t i, expected_size, n;
 
   input = "/var/logs/test/../../";
   expected = "/var";
@@ -172,9 +172,9 @@ int normalize_terminated(void)
 
 int normalize_relative_too_far(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "rel/../../";
   expected = "..";
@@ -188,9 +188,9 @@ int normalize_relative_too_far(void)
 
 int normalize_absolute_too_far(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "/var/logs/test/../../../../../../";
   expected = "/";
@@ -204,9 +204,9 @@ int normalize_absolute_too_far(void)
 
 int normalize_navigate_back(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "/var/logs/test/../../";
   expected = "/var";
@@ -220,9 +220,9 @@ int normalize_navigate_back(void)
 
 int normalize_do_nothing(void)
 {
-  size_t count;
-  char result[FILENAME_MAX];
-  char *input, *expected;
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
 
   input = "/var";
   expected = "/var";

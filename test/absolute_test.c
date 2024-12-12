@@ -8,11 +8,11 @@
 
 int absolute_check(void)
 {
-  const char *relative_paths[] = {"..", "test", "test/test", "../another_test",
+  const cpj_char_t *relative_paths[] = {"..", "test", "test/test", "../another_test",
     "./simple", ".././simple"};
-  const char *absolute_paths[] = {"/", "/test", "/../test/", "/../another_test",
+  const cpj_char_t *absolute_paths[] = {"/", "/test", "/../test/", "/../another_test",
     "/./simple", "/.././simple"};
-  size_t i;
+  cpj_size_t i;
 
   for (i = 0; i < ARRAY_SIZE(relative_paths); ++i) {
     if (cpj_path_is_absolute(CPJ_STYLE_UNIX, relative_paths[i])) {
@@ -31,8 +31,8 @@ int absolute_check(void)
 
 int absolute_too_far(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "../../../../../", buffer,
     sizeof(buffer));
@@ -61,8 +61,8 @@ int absolute_too_far(void)
 
 int absolute_normalization(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello//../there", "test//thing", buffer,
     sizeof(buffer));
@@ -80,8 +80,8 @@ int absolute_normalization(void)
 
 int absolute_mixed(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "hello/there", "/test", buffer,
     sizeof(buffer));
@@ -99,8 +99,8 @@ int absolute_mixed(void)
 
 int absolute_unix_relative_base(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "hello/there", "test", buffer, sizeof(buffer));
 
@@ -117,8 +117,8 @@ int absolute_unix_relative_base(void)
 
 int absolute_windows_relative_base(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_get_absolute(CPJ_STYLE_WINDOWS, "hello\\there", "test", buffer, sizeof(buffer));
 
@@ -135,8 +135,8 @@ int absolute_windows_relative_base(void)
 
 int absolute_absolute_path(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "/test", buffer,
     sizeof(buffer));
@@ -154,8 +154,8 @@ int absolute_absolute_path(void)
 
 int absolute_simple(void)
 {
-  char buffer[FILENAME_MAX];
-  size_t length;
+  cpj_char_t buffer[FILENAME_MAX];
+  cpj_size_t length;
 
   length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "..", buffer, sizeof(buffer));
 
@@ -173,7 +173,7 @@ int absolute_simple(void)
 
 int absolute_buffer_reuse(void)
 {
-  char path[FILENAME_MAX];
+  cpj_char_t path[FILENAME_MAX];
 
   memset(path, 1, FILENAME_MAX);
   path[0] = '\0';
