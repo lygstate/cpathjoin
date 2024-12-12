@@ -45,6 +45,17 @@ int absolute_too_far(void)
     return EXIT_FAILURE;
   }
 
+  length = cpj_path_get_absolute(CPJ_STYLE_WINDOWS, "C:/hello/there", "../../../../../", buffer,
+    sizeof(buffer));
+
+  if (length != 3) {
+    return EXIT_FAILURE;
+  }
+
+  if (strcmp(buffer, "C:\\") != 0) {
+    return EXIT_FAILURE;
+  }
+
   return EXIT_SUCCESS;
 }
 
