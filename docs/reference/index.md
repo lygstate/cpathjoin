@@ -30,16 +30,10 @@ Determine whether the path is absolute or not.
 * **[cpj_path_is_relative](cpj_path_is_relative.md)**
 Determine whether the path is relative or not.
 
-* **[cpj_path_join](cpj_path_join.md)**
-Joins two paths together.
-
 * **[cpj_path_join_multiple](cpj_path_join_multiple.md)**
 Joins multiple paths together.
 
-* **[cpj_path_normalize](cpj_path_normalize.md)**
-Creates a normalized version of the path.
-
-* **[cpj_path_intersection](cpj_path_intersection.md)**
+* **[cpj_path_get_intersection](cpj_path_get_intersection.md)**
 Finds common portions in two paths.
 
 ## Navigation
@@ -69,30 +63,6 @@ Determines whether the file path has an extension.
 * **[cpj_path_change_extension](cpj_path_change_extension.md)**
 Changes the extension of a file path.
 
-## Segments
-
-A segment represents a single component of a path. For instance, on linux a path might look like this ``/var/log/``, which consists of two segments ``var`` and ``log``.
-
-### Functions
-
-* **[cpj_path_get_first_segment](cpj_path_get_first_segment.md)**
-Gets the first segment of a path.
-
-* **[cpj_path_get_last_segment](cpj_path_get_last_segment.md)**
-Gets the last segment of the path.
-
-* **[cpj_path_get_next_segment](cpj_path_get_next_segment.md)**
-Advances to the next segment.
-
-* **[cpj_path_get_previous_segment](cpj_path_get_previous_segment.md)**
-Moves to the previous segment.
-
-* **[cpj_path_get_segment_type](cpj_path_get_segment_type.md)**
-Gets the type of the submitted path segment.
-
-* **[cpj_path_change_segment](cpj_path_change_segment.md)**
-Changes the content of a segment.
-
 ## Style
 
 The path style describes how paths are generated and parsed. **cpj** currently supports two path styles, ``CPJ_STYLE_WINDOWS`` and ``CPJ_STYLE_UNIX``.
@@ -101,9 +71,3 @@ The path style describes how paths are generated and parsed. **cpj** currently s
 
 * **[cpj_path_guess_style](cpj_path_guess_style.md)**
 Guesses the path style.
-
-* **[cpj_path_set_style](cpj_path_set_style.md)**
-Configures which path style is used.
-
-* **[cpj_path_get_style](cpj_path_get_style.md)**
-Gets the path style configuration.

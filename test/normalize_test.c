@@ -57,6 +57,23 @@ int normalize_only_separators(void)
   return EXIT_SUCCESS;
 }
 
+int normalize_zero_length(void)
+{
+  cpj_size_t count;
+  cpj_char_t result[FILENAME_MAX];
+  cpj_char_t *input, *expected;
+
+  input = "";
+  strcpy(result, input);
+  expected = ".";
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  if (count != strlen(expected) || strcmp(result, expected) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
 int normalize_empty(void)
 {
   cpj_size_t count;
@@ -188,13 +205,13 @@ int normalize_relative_too_far(void)
     return EXIT_FAILURE;
   }
 
-  expected = "C:";
+  expected = "C:.";
   count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, CPJ_ZSTR_LITERAL("C:rel/../"), result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
 
-  expected = "C:";
+  expected = "C:.";
   count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, CPJ_ZSTR_LITERAL("C:"), result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;

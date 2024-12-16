@@ -45,7 +45,7 @@ int basename_change_relative(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename_test(CPJ_STYLE_WINDOWS, "../test.txt", "another.txt", buffer,
+  n = cpj_path_change_basename_test(CPJ_STYLE_UNIX, "../test.txt", "another.txt", buffer,
     sizeof(buffer));
   if (n != 14) {
     return EXIT_FAILURE;

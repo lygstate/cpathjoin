@@ -10,11 +10,11 @@ int extension_change_with_trailing_slash(void)
   cpj_size_t n;
 
   n = cpj_path_change_extension_test(CPJ_STYLE_UNIX, buffer, ".md", buffer, sizeof(buffer));
-  if (n != 16) {
+  if (n != 15) {
     return EXIT_FAILURE;
   }
 
-  if (strcmp("/folder/file.md/", buffer) != 0) {
+  if (strcmp("/folder/file.md", buffer) != 0) {
     return EXIT_FAILURE;
   }
 
@@ -44,11 +44,11 @@ int extension_change_overlap_long(void)
   cpj_size_t n;
 
   n = cpj_path_change_extension_test(CPJ_STYLE_UNIX, buffer, ".text", buffer, sizeof(buffer));
-  if (n != 11) {
+  if (n != 10) {
     return EXIT_FAILURE;
   }
 
-  if (strcmp("/test.text/", buffer) != 0) {
+  if (strcmp("/test.text", buffer) != 0) {
     return EXIT_FAILURE;
   }
 
@@ -61,11 +61,11 @@ int extension_change_overlap(void)
   cpj_size_t n;
 
   n = cpj_path_change_extension_test(CPJ_STYLE_UNIX, buffer, ".md", buffer, sizeof(buffer));
-  if (n != 9) {
+  if (n != 8) {
     return EXIT_FAILURE;
   }
 
-  if (strcmp("/test.md/", buffer) != 0) {
+  if (strcmp("/test.md", buffer) != 0) {
     return EXIT_FAILURE;
   }
 
@@ -129,6 +129,46 @@ int extension_change_no_basename(void)
   cpj_size_t n;
 
   n = cpj_path_change_extension_test(CPJ_STYLE_WINDOWS, buffer, ".md", buffer, sizeof(buffer));
+  if (n != 6) {
+    return EXIT_FAILURE;
+  }
+
+  if (strcmp("C:\\.md", buffer) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  strcpy(buffer, "C:");
+  n = cpj_path_change_extension_test(CPJ_STYLE_WINDOWS, buffer, ".md", buffer, sizeof(buffer));
+  if (n != 5) {
+    return EXIT_FAILURE;
+  }
+
+  if (strcmp("C:.md", buffer) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  strcpy(buffer, "C:");
+  n = cpj_path_change_extension_test(CPJ_STYLE_WINDOWS, buffer, "md", buffer, sizeof(buffer));
+  if (n != 5) {
+    return EXIT_FAILURE;
+  }
+
+  if (strcmp("C:.md", buffer) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  strcpy(buffer, "C:\\");
+  n = cpj_path_change_extension_test(CPJ_STYLE_WINDOWS, buffer, "md", buffer, sizeof(buffer));
+  if (n != 6) {
+    return EXIT_FAILURE;
+  }
+
+  if (strcmp("C:\\.md", buffer) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  strcpy(buffer, "C:/");
+  n = cpj_path_change_extension_test(CPJ_STYLE_WINDOWS, buffer, "md", buffer, sizeof(buffer));
   if (n != 6) {
     return EXIT_FAILURE;
   }

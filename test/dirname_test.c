@@ -40,7 +40,7 @@ int dirname_root(void)
   path = "/";
   cpj_path_get_dirname_test(CPJ_STYLE_UNIX, path, &length);
 
-  if (length != 0) {
+  if (length != 1) {
     return EXIT_FAILURE;
   }
 

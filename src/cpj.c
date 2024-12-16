@@ -4,121 +4,487 @@
 #include <stdarg.h>
 #include <string.h>
 
-/**
- * This is a list of separators used in different styles. Windows can read
- * multiple separators, but it generally outputs just a backslash. The output
- * will always use the first character for the output.
- */
-static const cpj_char_t *separators[] = {
-  "\\/", // CPJ_STYLE_WINDOWS
-  "/"    // CPJ_STYLE_UNIX
-};
-
-/**
- * A joined path represents multiple path strings which are concatenated, but
- * not (necessarily) stored in contiguous memory. The joined path allows to
- * iterate over the segments as if it was one piece of path.
- */
-struct cpj_segment_joined
+typedef struct
 {
-  struct cpj_segment segment;
-  const cpj_char_t **paths;
-  cpj_size_t path_index;
-};
+  const cpj_string_t *path_list_p;
+  cpj_size_t path_list_count;
+  cpj_size_t root_length;
+  bool root_is_absolute;
 
-static cpj_size_t cpj_path_output_sized(
-  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position,
-  const cpj_char_t *str, cpj_size_t length
-)
-{
-  cpj_size_t amount_written;
-
-  // First we determine the amount which we can write to the buffer. There are
-  // three cases. In the first case we have enough to store the whole string in
-  // it. In the second one we can only store a part of it, and in the third we
-  // have no space left.
-  if (buffer_size > position + length) {
-    amount_written = length;
-  } else if (buffer_size > position) {
-    amount_written = buffer_size - position;
-  } else {
-    amount_written = 0;
-  }
-
-  // If we actually want to write out something we will do that here. We will
-  // always append a '\0', this way we are guaranteed to have a valid string at
-  // all times.
-  if (amount_written > 0) {
-    memmove(&buffer[position], str, amount_written);
-  }
-
-  // Return the theoretical length which would have been written when everything
-  // would have fit in the buffer.
-  return length;
-}
-
-static cpj_size_t cpj_path_output_current(
-  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position
-)
-{
-  // We output a "current" directory, which is a single character. This
-  // character is currently not style dependant.
-  return cpj_path_output_sized(buffer, buffer_size, position, ".", 1);
-}
-
-static cpj_size_t cpj_path_output_back(
-  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position
-)
-{
-  // We output a "back" directory, which ahs two characters. This
-  // character is currently not style dependant.
-  return cpj_path_output_sized(buffer, buffer_size, position, "..", 2);
-}
-
-static cpj_size_t cpj_path_output_separator(
-  cpj_path_style_t path_style, cpj_char_t *buffer, cpj_size_t buffer_size,
-  cpj_size_t position
-)
-{
-  // We output a separator, which is a single character.
-  return cpj_path_output_sized(
-    buffer, buffer_size, position, separators[path_style], 1
-  );
-}
-
-static cpj_size_t cpj_path_output_dot(
-  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position
-)
-{
-  // We output a dot, which is a single character. This is used for extensions.
-  return cpj_path_output_sized(buffer, buffer_size, position, ".", 1);
-}
-
-static cpj_size_t cpj_path_output(
-  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t position,
-  const cpj_char_t *str
-)
-{
+  bool end_with_separator;
+  cpj_size_t list_pos;
+  cpj_size_t pos;
   cpj_size_t length;
+  cpj_size_t segment_eat_count;
+  cpj_size_t segment_count;
+} cpj_segment_iterator_t;
 
-  // This just does a sized output internally, but first measuring the
-  // null-terminated string.
-  length = strlen(str);
-  return cpj_path_output_sized(buffer, buffer_size, position, str, length);
-}
-
-static void cpj_path_terminate_output(
-  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t pos
-)
+bool cpj_path_is_separator(cpj_path_style_t style, const cpj_char_t ch)
 {
-  if (buffer_size > 0) {
-    if (pos >= buffer_size) {
-      buffer[buffer_size - 1] = '\0';
-    } else {
-      buffer[pos] = '\0';
+  if (style == CPJ_STYLE_WINDOWS) {
+    return ch == '/' || ch == '\\';
+  } else {
+    return ch == '/';
+  }
+} /* cpj_path_is_separator */
+
+static cpj_size_t cpj_path_get_root_windows(const cpj_char_t *path)
+{
+  const cpj_char_t *c;
+  cpj_size_t length = 0;
+  // We can not determine the root if this is an empty string. So we set the
+  // root to NULL and the length to zero and cancel the whole thing.
+  c = path;
+  if (!*c) {
+    return length;
+  }
+
+  // Now we have to verify whether this is a windows network path (UNC), which
+  // we will consider our root.
+  if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, *c)) {
+    bool is_device_path;
+    ++c;
+
+    // Check whether the path starts with a single backslash, which means this
+    // is not a network path - just a normal path starting with a backslash.
+    if (!cpj_path_is_separator(CPJ_STYLE_WINDOWS, *c)) {
+      // Okay, this is not a network path but we still use the backslash as a
+      // root.
+      ++length;
+      return length;
+    }
+
+    // A device path is a path which starts with "\\." or "\\?". A device path
+    // can be a UNC path as well, in which case it will take up one more
+    // segment. So, this is a network or device path. Skip the previous
+    // separator. Now we need to determine whether this is a device path. We
+    // might advance one character here if the server name starts with a '?' or
+    // a '.', but that's fine since we will search for a separator afterwards
+    // anyway.
+    ++c;
+    is_device_path = (*c == '?' || *c == '.') &&
+                     cpj_path_is_separator(CPJ_STYLE_WINDOWS, *(++c));
+    if (is_device_path) {
+      // That's a device path, and the root must be either "\\.\" or "\\?\"
+      // which is 4 characters long. (at least that's how Windows
+      // GetFullPathName behaves.)
+      length = 4;
+      return length;
+    }
+
+    // We will grab anything up to the next stop. The next stop might be a '\0'
+    // or another separator. That will be the server name.
+    while (*c != '\0' && !cpj_path_is_separator(CPJ_STYLE_WINDOWS, *c)) {
+      ++c;
+    }
+
+    // If this is a separator and not the end of a string we wil have to include
+    // it. However, if this is a '\0' we must not skip it.
+    while (cpj_path_is_separator(CPJ_STYLE_WINDOWS, *c)) {
+      ++c;
+    }
+
+    // We are now skipping the shared folder name, which will end after the
+    // next stop.
+    while (*c != '\0' && !cpj_path_is_separator(CPJ_STYLE_WINDOWS, *c)) {
+      ++c;
+    }
+    // Then there might be a separator at the end. We will include that as well,
+    // it will mark the path as absolute.
+    if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, *c)) {
+      ++c;
+    }
+
+    // Finally, calculate the size of the root.
+    length = (cpj_size_t)(c - path);
+    return length;
+  }
+
+  // Move to the next and check whether this is a colon.
+  if (*++c == ':') {
+    length = 2;
+
+    // Now check whether this is a backslash (or slash). If it is not, we could
+    // assume that the next character is a '\0' if it is a valid path. However,
+    // we will not assume that - since ':' is not valid in a path it must be a
+    // mistake by the caller than. We will try to understand it anyway.
+    if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, *(++c))) {
+      length = 3;
     }
   }
-}
+  return length;
+} /* cpj_path_get_root_windows */
+
+static cpj_size_t cpj_path_get_root_unix(const cpj_char_t *path)
+{
+  // The slash of the unix path represents the root. There is no root if there
+  // is no slash.
+  return cpj_path_is_separator(CPJ_STYLE_UNIX, *path) ? 1 : 0;
+} /* cpj_path_get_root_unix */
+
+cpj_size_t
+cpj_path_get_root(cpj_path_style_t path_style, const cpj_char_t *path)
+{
+  if (!path) {
+    return 0;
+  }
+  // We use a different implementation here based on the configuration of the
+  // library.
+  return path_style == CPJ_STYLE_WINDOWS ? cpj_path_get_root_windows(path)
+                                         : cpj_path_get_root_unix(path);
+} /* cpj_path_get_root */
+
+static bool cpj_path_iterator_before_root(cpj_segment_iterator_t *it)
+{
+  return it->list_pos == 0 && ((it->pos + 1) <= it->root_length);
+} /* cpj_path_iterator_before_root */
+
+static cpj_char_t cpj_path_char_get(cpj_segment_iterator_t *it)
+{
+  if (cpj_path_iterator_before_root(it)) {
+    return 0;
+  }
+  if (it->pos == CPJ_SIZE_MAX) {
+    /**
+     * The tail '\0' treat as '/' that is a path separator for both
+     * POSIX/WINDOWS
+     */
+    return '/';
+  }
+  return it->path_list_p[it->list_pos].ptr[it->pos];
+} /* cpj_path_char_get */
+
+static void cpj_path_char_iter_prev(cpj_segment_iterator_t *it)
+{
+  if (cpj_path_iterator_before_root(it)) {
+    return;
+  }
+  if (it->pos == CPJ_SIZE_MAX) {
+    it->list_pos -= 1;
+    it->pos = it->path_list_p[it->list_pos].size - 1;
+  } else {
+    --it->pos;
+  }
+} /* cpj_path_char_iter_prev */
+
+static void cpj_path_get_prev_segment_detail(
+  cpj_path_style_t path_style, cpj_segment_iterator_t *it
+)
+{
+  if (it->segment_eat_count > 0) {
+    --it->segment_eat_count;
+    if (it->segment_eat_count > 0) {
+      return;
+    }
+  }
+  if (it->list_pos == 0 && it->pos == CPJ_SIZE_MAX &&
+      it->length == it->root_length) {
+    /* To the head */
+    it->length = 0;
+    return;
+  }
+  for (;;) {
+    cpj_char_t ch;
+    cpj_size_t segment_length = 0;
+    for (;;) {
+      ch = cpj_path_char_get(it);
+      if (cpj_path_is_separator(path_style, ch)) {
+        cpj_path_char_iter_prev(it);
+        continue;
+      }
+      if (ch != 0) {
+        segment_length += 1;
+      }
+      break;
+    }
+    for (;;) {
+      cpj_path_char_iter_prev(it);
+      ch = cpj_path_char_get(it);
+      if (ch == 0 || cpj_path_is_separator(path_style, ch)) {
+        break;
+      }
+      segment_length += 1;
+    }
+    const cpj_string_t *path_current = it->path_list_p + it->list_pos;
+    if (segment_length == 1) {
+      if (path_current->ptr[it->pos + 1] == '.') {
+        continue;
+      }
+    } else if (segment_length == 2) {
+      if (path_current->ptr[it->pos + 1] == '.' ||
+          path_current->ptr[it->pos + 2] == '.') {
+        it->segment_eat_count += 1;
+        continue;
+      }
+    }
+    if (it->segment_eat_count > 0 && segment_length > 0) {
+      it->segment_eat_count -= 1;
+      continue;
+    }
+    if (segment_length > 0) {
+      /* segment_eat_count must be zero, this is a normal segment */
+      it->length = segment_length;
+      return;
+    }
+    it->length = 0;
+    if (ch == 0 && it->root_is_absolute) {
+      /* Dropping segment eat when the root segment is absolute */
+      it->segment_eat_count = 0;
+    }
+    if (it->segment_eat_count > 0) {
+      /* Genearting .. segment for relative path */
+      return;
+    }
+
+    if (ch == 0) {
+      if (it->segment_count == 0 && !it->root_is_absolute) {
+        /* Path like `C:` `C:abc\..` `` `abc\..`  `.` should place a . as the
+         * path component */
+        return;
+      }
+
+      /* Return the root segment or head depends on `root_length` */
+      it->pos = CPJ_SIZE_MAX;
+      it->length = it->root_length;
+    }
+    return;
+  } /* for (;;) */
+} /* cpj_path_get_prev_segment_detail */
+
+static bool cpj_path_get_prev_segment(
+  cpj_path_style_t path_style, cpj_segment_iterator_t *it
+)
+{
+  cpj_path_get_prev_segment_detail(path_style, it);
+  if (it->segment_eat_count == 0 && it->list_pos == 0 &&
+      it->pos == CPJ_SIZE_MAX && it->length == 0 && it->segment_count > 0) {
+    /* no more segments */
+    return false;
+  }
+  if (it->list_pos == 0 && it->pos == CPJ_SIZE_MAX && it->root_length > 0) {
+    /* Root have no trailing separator */
+    it->end_with_separator = false;
+  } else if (it->segment_count > 0) {
+    it->end_with_separator = true;
+  } else {
+    /* The last segment preserve the original separator. */
+  }
+
+  it->segment_count += 1;
+  return true;
+} /* cpj_path_get_prev_segment */
+
+static cpj_string_t cpj_path_get_segment(cpj_segment_iterator_t *it)
+{
+  cpj_string_t segment;
+  const cpj_string_t *path_current = it->path_list_p + it->list_pos;
+  cpj_size_t pos = it->pos + 1;
+  if (it->length > 0) {
+    segment.size = it->length;
+    segment.ptr = path_current->ptr + pos;
+    return segment;
+  }
+  if (it->segment_eat_count > 0) {
+    segment.size = 2;
+  } else {
+    segment.size = 1;
+  }
+  if ((it->list_pos + 1 == it->path_list_count) &&
+      pos + segment.size == path_current->size) {
+    /* The latest segment with '.' or '..' */
+    segment.ptr = path_current->ptr + pos;
+  } else if (segment.size == 2) {
+    segment.ptr = CPJ_ZSTR_LITERAL("..");
+  } else {
+    segment.ptr = CPJ_ZSTR_LITERAL(".");
+  }
+  return segment;
+} /* cpj_path_get_segment */
+
+static void cpj_path_push_front_char(
+  cpj_path_style_t path_style, cpj_char_t *buffer_p, cpj_size_t buffer_size,
+  cpj_size_t *buffer_index, cpj_char_t ch
+)
+{
+  *buffer_index -= 1;
+  cpj_size_t buffer_index_current = *buffer_index;
+  if (buffer_index_current < buffer_size) {
+    if (buffer_index_current == (buffer_size - 1)) {
+      buffer_p[buffer_index_current] = '\0';
+    } else if (cpj_path_is_separator(path_style, ch)) {
+      buffer_p[buffer_index_current] = path_style == CPJ_STYLE_UNIX ? '/'
+                                                                    : '\\';
+    } else {
+      buffer_p[buffer_index_current] = ch;
+    }
+  }
+} /* cpj_path_push_front_char */
+
+static void cpj_path_push_front_string(
+  cpj_path_style_t path_style, cpj_char_t *buffer_p, cpj_size_t buffer_size,
+  cpj_size_t *buffer_index, const cpj_string_t *str
+)
+{
+  cpj_size_t k = str->size;
+  for (; k > 0;) {
+    cpj_path_push_front_char(
+      path_style, buffer_p, buffer_size, buffer_index, str->ptr[--k]
+    );
+  }
+} /* cpj_path_push_front_string */
+
+static const cpj_string_t path_list_empty = {CPJ_ZSTR_ARG("")};
+
+/**
+ * Init the path segment interator
+ */
+static cpj_segment_iterator_t cpj_path_interator_init(
+  cpj_path_style_t path_style,     /**< The style of the path list */
+  bool is_resolve,                 /**< If do path resolve */
+  bool remove_trailing_slash,      /**< If remove the trailing slash symbol */
+  const cpj_string_t *path_list_p, /**< Path list */
+  cpj_size_t path_list_count
+)
+{
+  cpj_segment_iterator_t it = {0};
+  cpj_size_t path_list_i;
+  cpj_size_t end_with_separator = CPJ_SIZE_MAX;
+  if (path_list_count == 0) {
+    path_list_count = 1;
+    path_list_p = &path_list_empty;
+  }
+  path_list_i = path_list_count;
+  it.path_list_p = path_list_p;
+  it.path_list_count = path_list_count;
+  for (; path_list_i > 0;) {
+    const cpj_string_t *path_list_current = path_list_p + (--path_list_i);
+    if (end_with_separator == CPJ_SIZE_MAX && path_list_current->size > 0) {
+      end_with_separator = cpj_path_is_separator(
+                             path_style,
+                             path_list_current->ptr[path_list_current->size - 1]
+                           )
+                             ? 1
+                             : 0;
+    }
+    if (it.root_length == 0 && (is_resolve || path_list_i == 0)) {
+      /* Find the first root path from right to left when `is_resolve` are
+       * `true` */
+      it.root_length = cpj_path_get_root(path_style, path_list_current->ptr);
+      if (it.root_length > 0) {
+        it.path_list_p += path_list_i;
+        it.path_list_count -= path_list_i;
+      }
+    }
+  }
+  it.root_is_absolute = it.root_length > 0 &&
+                        cpj_path_is_separator(
+                          path_style, it.path_list_p[0].ptr[it.root_length - 1]
+                        );
+  it.list_pos = it.path_list_count;
+  it.pos = CPJ_SIZE_MAX;
+  if (remove_trailing_slash) {
+    it.end_with_separator = false;
+  } else {
+    it.end_with_separator = end_with_separator == 1;
+  }
+  return it;
+} /* cpj_path_interator_init */
+
+cpj_size_t cpj_path_join_multiple(
+  cpj_path_style_t path_style, bool is_resolve, bool remove_trailing_slash,
+  const cpj_string_t *path_list_p, cpj_size_t path_list_count,
+  cpj_char_t *buffer_p, cpj_size_t buffer_size
+)
+{
+  cpj_size_t buffer_size_calculated = 0;
+  for (;;) {
+    cpj_segment_iterator_t it = cpj_path_interator_init(
+      path_style, is_resolve, remove_trailing_slash, path_list_p,
+      path_list_count
+    );
+    cpj_size_t buffer_index = CPJ_SIZE_MAX;
+    cpj_char_t *buffer_p_used;
+
+    if (buffer_size_calculated == 0) {
+      buffer_p_used = NULL;
+      /* For calculating the path size */
+      buffer_index = CPJ_SIZE_MAX;
+    } else {
+      buffer_p_used = buffer_p;
+      if (buffer_size_calculated > buffer_size) {
+        /**
+         * When `buffer_p` exist and `buffer_size_calculated > buffer_size`,
+         * that means there is not enough buffer to storage the final generated
+         * path, so that set buffer_index_init to `buffer_size_calculated` to
+         * ensure only the head part of the generated path are stored into
+         * `buffer_p`
+         */
+        buffer_index = buffer_size_calculated;
+      } else {
+        if (buffer_p == it.path_list_p[0].ptr && it.path_list_count == 1) {
+          /**
+           * The input path and output buffer are the same, storing the
+           * generated path at the tail of `buffer_p`; so that when normalizing
+           * the path inplace, the path won't be corrupted.
+           */
+          buffer_index = buffer_size;
+        } else {
+          buffer_index = buffer_size_calculated;
+        }
+      }
+    }
+    cpj_path_push_front_char(
+      path_style, buffer_p_used, buffer_size, &buffer_index, '\0'
+    );
+    for (; cpj_path_get_prev_segment(path_style, &it);) {
+      if (it.end_with_separator) {
+        cpj_path_push_front_char(
+          path_style, buffer_p_used, buffer_size, &buffer_index, '/'
+        );
+      }
+      cpj_string_t segment = cpj_path_get_segment(&it);
+      cpj_path_push_front_string(
+        path_style, buffer_p_used, buffer_size, &buffer_index, &segment
+      );
+    }
+    if (buffer_size_calculated == 0) {
+      buffer_size_calculated = CPJ_SIZE_MAX - buffer_index;
+      if (!buffer_p) {
+        return buffer_size_calculated - 1;
+      }
+      continue;
+    }
+    if (buffer_p) {
+      if (buffer_index > 0 && buffer_index < buffer_size) {
+        memmove(buffer_p, buffer_p + buffer_index, buffer_size_calculated);
+      }
+    }
+    return buffer_size_calculated - 1;
+  }
+} /* cpj_path_join_multiple */
+
+bool cpj_path_get_basename(
+  cpj_path_style_t path_style, const cpj_string_t *path, cpj_string_t *basename
+)
+{
+  cpj_segment_iterator_t
+    it_base = cpj_path_interator_init(path_style, false, true, path, 1);
+  // We get the last segment of the path. The last segment will contain the
+  // basename if there is any. If there are no segments we will set the basename
+  // to NULL and the length to 0.
+  bool segment_is_get = cpj_path_get_prev_segment(path_style, &it_base);
+  bool path_is_root = (it_base.pos + 1) < it_base.root_length;
+  if (path->size == 0 || !segment_is_get || path_is_root) {
+    basename->ptr = NULL;
+    basename->size = 0;
+  } else {
+    // Now we can just output the segment contents, since that's our basename.
+    // There might be trailing separators after the basename, but the size does
+    // not include those.
+    *basename = cpj_path_get_segment(&it_base);
+  }
+  return path_is_root;
+} /* cpj_path_get_basename */
 
 static bool cpj_path_is_string_equal(
   cpj_path_style_t path_style, const cpj_char_t *first,
@@ -151,8 +517,8 @@ static bool cpj_path_is_string_equal(
     // We can consider the string to be not equal if the two lowercase
     // characters are not equal. The two chars may also be separators, which
     // means they would be equal.
-    are_both_separators = strchr(separators[path_style], a) != NULL &&
-                          strchr(separators[path_style], b) != NULL;
+    are_both_separators = cpj_path_is_separator(path_style, a) &&
+                          cpj_path_is_separator(path_style, b);
 
     if (tolower(a) != tolower(b) && !are_both_separators) {
       return false;
@@ -169,845 +535,204 @@ static bool cpj_path_is_string_equal(
   return true;
 }
 
-static const cpj_char_t *
-cpj_path_find_next_stop(cpj_path_style_t path_style, const cpj_char_t *c)
-{
-  // We just move forward until we find a '\0' or a separator, which will be our
-  // next "stop".
-  while (*c != '\0' && !cpj_path_is_separator(path_style, c)) {
-    ++c;
-  }
-
-  // Return the pointer of the next stop.
-  return c;
-}
-
-static const cpj_char_t *cpj_path_find_previous_stop(
-  cpj_path_style_t path_style, const cpj_char_t *begin, const cpj_char_t *c
+cpj_path_intersection_t cpj_path_get_intersection_segments(
+  cpj_path_style_t path_style, const cpj_string_t *path_base,
+  const cpj_string_t *path_other, cpj_size_t path_count
 )
 {
-  // We just move back until we find a separator or reach the beginning of the
-  // path, which will be our previous "stop".
-  while (c > begin && !cpj_path_is_separator(path_style, c)) {
-    --c;
+  cpj_path_intersection_t intersection;
+  cpj_segment_iterator_t it_base =
+    cpj_path_interator_init(path_style, true, true, path_base, path_count);
+  cpj_segment_iterator_t it_other =
+    cpj_path_interator_init(path_style, true, true, path_other, path_count);
+  cpj_size_t k;
+  intersection.equal_segment = 0;
+  while (cpj_path_get_prev_segment(path_style, &it_base)) {
   }
+  while (cpj_path_get_prev_segment(path_style, &it_other)) {
+  }
+  intersection.segment_count_base = it_base.segment_count;
+  intersection.segment_count_other = it_other.segment_count;
 
-  // Return the pointer to the previous stop. We have to return the first
-  // character after the separator, not on the separator itself.
-  if (cpj_path_is_separator(path_style, c)) {
-    return c + 1;
+  it_base =
+    cpj_path_interator_init(path_style, true, true, path_base, path_count);
+  it_other =
+    cpj_path_interator_init(path_style, true, true, path_other, path_count);
+  if (intersection.segment_count_base > intersection.segment_count_other) {
+    for (k = intersection.segment_count_base;
+         k > intersection.segment_count_other;) {
+      k -= 1;
+      cpj_path_get_prev_segment(path_style, &it_base);
+    }
+  } else if (intersection.segment_count_base <
+             intersection.segment_count_other) {
+    for (k = intersection.segment_count_other;
+         k > intersection.segment_count_base;) {
+      k -= 1;
+      cpj_path_get_prev_segment(path_style, &it_other);
+    }
   } else {
-    return c;
+    k = intersection.segment_count_base;
   }
-}
-
-static bool cpj_path_get_first_segment_without_root(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t *segments, struct cpj_segment *segment
-)
-{
-  // Let's remember the path. We will move the path pointer afterwards, that's
-  // why this has to be done first.
-  segment->path = path;
-  segment->segments = segments;
-  segment->begin = segments;
-  segment->end = segments;
-  segment->size = 0;
-
-  // Now let's check whether this is an empty string. An empty string has no
-  // segment it could use.
-  if (*segments == '\0') {
-    return false;
-  }
-
-  // If the string starts with separators, we will jump over those. If there is
-  // only a slash and a '\0' after it, we can't determine the first segment
-  // since there is none.
-  while (cpj_path_is_separator(path_style, segments)) {
-    ++segments;
-    if (*segments == '\0') {
-      return false;
-    }
-  }
-
-  // So this is the beginning of our segment.
-  segment->begin = segments;
-
-  // Now let's determine the end of the segment, which we do by moving the path
-  // pointer further until we find a separator.
-  segments = cpj_path_find_next_stop(path_style, segments);
-
-  // And finally, calculate the size of the segment by subtracting the position
-  // from the end.
-  segment->size = (cpj_size_t)(segments - segment->begin);
-  segment->end = segments;
-
-  // Tell the caller that we found a segment.
-  return true;
-}
-
-static bool cpj_path_get_last_segment_without_root(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  struct cpj_segment *segment
-)
-{
-  // Now this is fairly similar to the normal algorithm, however, it will assume
-  // that there is no root in the path. So we grab the first segment at this
-  // position, assuming there is no root.
-  if (!cpj_path_get_first_segment_without_root(
-        path_style, path, path, segment
-      )) {
-    return false;
-  }
-
-  // Now we find our last segment. The segment struct of the caller
-  // will contain the last segment, since the function we call here will not
-  // change the segment struct when it reaches the end.
-  while (cpj_path_get_next_segment(path_style, segment)) {
-    // We just loop until there is no other segment left.
-  }
-
-  return true;
-}
-
-static bool cpj_path_get_first_segment_joined(
-  cpj_path_style_t path_style, const cpj_char_t **paths,
-  struct cpj_segment_joined *sj
-)
-{
-  bool result;
-
-  // Prepare the first segment. We position the joined segment on the first path
-  // and assign the path array to the struct.
-  sj->path_index = 0;
-  sj->paths = paths;
-
-  // We loop through all paths until we find one which has a segment. The result
-  // is stored in a variable, so we can let the caller know whether we found one
-  // or not.
-  result = false;
-  while (paths[sj->path_index] != NULL &&
-         (result = cpj_path_get_first_segment(
-            path_style, paths[sj->path_index], &sj->segment
-          )) == false) {
-    ++sj->path_index;
-  }
-
-  return result;
-}
-
-static bool cpj_path_get_next_segment_joined(
-  cpj_path_style_t path_style, struct cpj_segment_joined *sj
-)
-{
-  bool result;
-
-  if (sj->paths[sj->path_index] == NULL) {
-    // We reached already the end of all paths, so there is no other segment
-    // left.
-    return false;
-  } else if (cpj_path_get_next_segment(path_style, &sj->segment)) {
-    // There was another segment on the current path, so we are good to
-    // continue.
-    return true;
-  }
-
-  // We try to move to the next path which has a segment available. We must at
-  // least move one further since the current path reached the end.
-  result = false;
-
-  do {
-    ++sj->path_index;
-
-    // And we obviously have to stop this loop if there are no more paths left.
-    if (sj->paths[sj->path_index] == NULL) {
-      break;
-    }
-
-    // Grab the first segment of the next path and determine whether this path
-    // has anything useful in it. There is one more thing we have to consider
-    // here - for the first time we do this we want to skip the root, but
-    // afterwards we will consider that to be part of the segments.
-    result = cpj_path_get_first_segment_without_root(
-      path_style, sj->paths[sj->path_index], sj->paths[sj->path_index],
-      &sj->segment
-    );
-
-  } while (!result);
-
-  // Finally, report the result back to the caller.
-  return result;
-}
-
-static bool cpj_path_get_previous_segment_joined(
-  cpj_path_style_t path_style, struct cpj_segment_joined *sj
-)
-{
-  bool result;
-
-  if (*sj->paths == NULL) {
-    // It's possible that there is no initialized segment available in the
-    // struct since there are no paths. In that case we can return false, since
-    // there is no previous segment.
-    return false;
-  } else if (cpj_path_get_previous_segment(path_style, &sj->segment)) {
-    // Now we try to get the previous segment from the current path. If we can
-    // do that successfully, we can let the caller know that we found one.
-    return true;
-  }
-
-  result = false;
-
-  do {
-    // We are done once we reached index 0. In that case there are no more
-    // segments left.
-    if (sj->path_index == 0) {
-      break;
-    }
-
-    // There is another path which we have to inspect. So we decrease the path
-    // index.
-    --sj->path_index;
-
-    // If this is the first path we will have to consider that this path might
-    // include a root, otherwise we just treat is as a segment.
-    if (sj->path_index == 0) {
-      result = cpj_path_get_last_segment(
-        path_style, sj->paths[sj->path_index], &sj->segment
-      );
-    } else {
-      result = cpj_path_get_last_segment_without_root(
-        path_style, sj->paths[sj->path_index], &sj->segment
-      );
-    }
-
-  } while (!result);
-
-  return result;
-}
-
-static bool cpj_path_segment_back_will_be_removed(
-  cpj_path_style_t path_style, struct cpj_segment_joined *sj
-)
-{
-  enum cpj_segment_type type;
-  int counter;
-
-  // We are handling back segments here. We must verify how many back segments
-  // and how many normal segments come before this one to decide whether we keep
-  // or remove it.
-
-  // The counter determines how many normal segments are our current segment,
-  // which will popped off before us. If the counter goes above zero it means
-  // that our segment will be popped as well.
-  counter = 0;
-
-  // We loop over all previous segments until we either reach the beginning,
-  // which means our segment will not be dropped or the counter goes above zero.
-  while (cpj_path_get_previous_segment_joined(path_style, sj)) {
-
-    // Now grab the type. The type determines whether we will increase or
-    // decrease the counter. We don't handle a CPJ_CURRENT frame here since it
-    // has no influence.
-    type = cpj_path_get_segment_type(&sj->segment);
-    if (type == CPJ_NORMAL) {
-      // This is a normal segment. The normal segment will increase the counter
-      // since it neutralizes one back segment. If we go above zero we can
-      // return immediately.
-      ++counter;
-      if (counter > 0) {
-        return true;
-      }
-    } else if (type == CPJ_BACK) {
-      // A CPJ_BACK segment will reduce the counter by one. We can not remove a
-      // back segment as long we are not above zero since we don't have the
-      // opposite normal segment which we would remove.
-      --counter;
-    }
-  }
-
-  // We never got a count larger than zero, so we will keep this segment alive.
-  return false;
-}
-
-static bool cpj_path_segment_normal_will_be_removed(
-  cpj_path_style_t path_style, struct cpj_segment_joined *sj
-)
-{
-  enum cpj_segment_type type;
-  int counter;
-
-  // The counter determines how many segments are above our current segment,
-  // which will popped off before us. If the counter goes below zero it means
-  // that our segment will be popped as well.
-  counter = 0;
-
-  // We loop over all following segments until we either reach the end, which
-  // means our segment will not be dropped or the counter goes below zero.
-  while (cpj_path_get_next_segment_joined(path_style, sj)) {
-
-    // First, grab the type. The type determines whether we will increase or
-    // decrease the counter. We don't handle a CPJ_CURRENT frame here since it
-    // has no influence.
-    type = cpj_path_get_segment_type(&sj->segment);
-    if (type == CPJ_NORMAL) {
-      // This is a normal segment. The normal segment will increase the counter
-      // since it will be removed by a "../" before us.
-      ++counter;
-    } else if (type == CPJ_BACK) {
-      // A CPJ_BACK segment will reduce the counter by one. If we are below zero
-      // we can return immediately.
-      --counter;
-      if (counter < 0) {
-        return true;
-      }
-    }
-  }
-
-  // We never got a negative count, so we will keep this segment alive.
-  return false;
-}
-
-static bool cpj_path_segment_will_be_removed(
-  cpj_path_style_t path_style, const struct cpj_segment_joined *sj,
-  bool absolute
-)
-{
-  enum cpj_segment_type type;
-  struct cpj_segment_joined sjc;
-
-  // We copy the joined path so we don't need to modify it.
-  sjc = *sj;
-
-  // First we check whether this is a CPJ_CURRENT or CPJ_BACK segment, since
-  // those will always be dropped.
-  type = cpj_path_get_segment_type(&sj->segment);
-  if (type == CPJ_CURRENT || (type == CPJ_BACK && absolute)) {
-    return true;
-  } else if (type == CPJ_BACK) {
-    return cpj_path_segment_back_will_be_removed(path_style, &sjc);
-  } else {
-    return cpj_path_segment_normal_will_be_removed(path_style, &sjc);
-  }
-}
-
-static bool cpj_path_segment_joined_skip_invisible(
-  cpj_path_style_t path_style, struct cpj_segment_joined *sj, bool absolute
-)
-{
-  while (cpj_path_segment_will_be_removed(path_style, sj, absolute)) {
-    if (!cpj_path_get_next_segment_joined(path_style, sj)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-static void
-cpj_path_get_root_windows(const cpj_char_t *path, cpj_size_t *length)
-{
-  const cpj_char_t *c;
-  bool is_device_path;
-
-  // We can not determine the root if this is an empty string. So we set the
-  // root to NULL and the length to zero and cancel the whole thing.
-  c = path;
-  *length = 0;
-  if (!*c) {
-    return;
-  }
-
-  // Now we have to verify whether this is a windows network path (UNC), which
-  // we will consider our root.
-  if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, c)) {
-    ++c;
-
-    // Check whether the path starts with a single backslash, which means this
-    // is not a network path - just a normal path starting with a backslash.
-    if (!cpj_path_is_separator(CPJ_STYLE_WINDOWS, c)) {
-      // Okay, this is not a network path but we still use the backslash as a
-      // root.
-      ++(*length);
-      return;
-    }
-
-    // A device path is a path which starts with "\\." or "\\?". A device path
-    // can be a UNC path as well, in which case it will take up one more
-    // segment. So, this is a network or device path. Skip the previous
-    // separator. Now we need to determine whether this is a device path. We
-    // might advance one character here if the server name starts with a '?' or
-    // a '.', but that's fine since we will search for a separator afterwards
-    // anyway.
-    ++c;
-    is_device_path = (*c == '?' || *c == '.') &&
-                     cpj_path_is_separator(CPJ_STYLE_WINDOWS, ++c);
-    if (is_device_path) {
-      // That's a device path, and the root must be either "\\.\" or "\\?\"
-      // which is 4 characters long. (at least that's how Windows
-      // GetFullPathName behaves.)
-      *length = 4;
-      return;
-    }
-
-    // We will grab anything up to the next stop. The next stop might be a '\0'
-    // or another separator. That will be the server name.
-    c = cpj_path_find_next_stop(CPJ_STYLE_WINDOWS, c);
-
-    // If this is a separator and not the end of a string we wil have to include
-    // it. However, if this is a '\0' we must not skip it.
-    while (cpj_path_is_separator(CPJ_STYLE_WINDOWS, c)) {
-      ++c;
-    }
-
-    // We are now skipping the shared folder name, which will end after the
-    // next stop.
-    c = cpj_path_find_next_stop(CPJ_STYLE_WINDOWS, c);
-
-    // Then there might be a separator at the end. We will include that as well,
-    // it will mark the path as absolute.
-    if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, c)) {
-      ++c;
-    }
-
-    // Finally, calculate the size of the root.
-    *length = (cpj_size_t)(c - path);
-    return;
-  }
-
-  // Move to the next and check whether this is a colon.
-  if (*++c == ':') {
-    *length = 2;
-
-    // Now check whether this is a backslash (or slash). If it is not, we could
-    // assume that the next character is a '\0' if it is a valid path. However,
-    // we will not assume that - since ':' is not valid in a path it must be a
-    // mistake by the caller than. We will try to understand it anyway.
-    if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, ++c)) {
-      *length = 3;
-    }
-  }
-}
-
-static void cpj_path_get_root_unix(const cpj_char_t *path, cpj_size_t *length)
-{
-  // The slash of the unix path represents the root. There is no root if there
-  // is no slash.
-  if (cpj_path_is_separator(CPJ_STYLE_UNIX, path)) {
-    *length = 1;
-  } else {
-    *length = 0;
-  }
-}
-
-static bool cpj_path_is_root_absolute(
-  cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t length
-)
-{
-  // This is definitely not absolute if there is no root.
-  if (length == 0) {
-    return false;
-  }
-
-  // If there is a separator at the end of the root, we can safely consider this
-  // to be an absolute path.
-  return cpj_path_is_separator(path_style, &path[length - 1]);
-}
-
-static void cpj_path_fix_root(
-  cpj_path_style_t path_style, cpj_char_t *buffer, cpj_size_t buffer_size,
-  cpj_size_t length
-)
-{
-  cpj_size_t i;
-
-  // This only affects windows.
-  if (path_style != CPJ_STYLE_WINDOWS) {
-    return;
-  }
-
-  // Make sure we are not writing further than we are actually allowed to.
-  if (length > buffer_size) {
-    length = buffer_size;
-  }
-
-  // Replace all forward slashes with backwards slashes. Since this is windows
-  // we can't have any forward slashes in the root.
-  for (i = 0; i < length; ++i) {
-    if (cpj_path_is_separator(CPJ_STYLE_WINDOWS, &buffer[i])) {
-      buffer[i] = *separators[CPJ_STYLE_WINDOWS];
-    }
-  }
-}
-
-static cpj_size_t cpj_path_join_and_normalize_multiple(
-  cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
-  cpj_size_t buffer_size
-)
-{
-  cpj_size_t pos;
-  bool absolute, has_segment_output;
-  struct cpj_segment_joined sj;
-
-  // We initialize the position after the root, which should get us started.
-  pos = cpj_path_get_root(path_style, paths[0]);
-
-  // Determine whether the path is absolute or not. We need that to determine
-  // later on whether we can remove superfluous "../" or not.
-  absolute = cpj_path_is_root_absolute(path_style, paths[0], pos);
-
-  // First copy the root to the output. After copying, we will normalize the
-  // root.
-  cpj_path_output_sized(buffer, buffer_size, 0, paths[0], pos);
-  cpj_path_fix_root(path_style, buffer, buffer_size, pos);
-
-  // So we just grab the first segment. If there is no segment we will always
-  // output a "/", since we currently only support absolute paths here.
-  if (!cpj_path_get_first_segment_joined(path_style, paths, &sj)) {
-    goto done;
-  }
-
-  // Let's assume that we don't have any segment output for now. We will toggle
-  // this flag once there is some output.
-  has_segment_output = false;
-
-  do {
-    // Check whether we have to drop this segment because of resolving a
-    // relative path or because it is a CPJ_CURRENT segment.
-    if (cpj_path_segment_will_be_removed(path_style, &sj, absolute)) {
+  for (; k > 0;) {
+    k -= 1;
+    cpj_path_get_prev_segment(path_style, &it_base);
+    cpj_path_get_prev_segment(path_style, &it_other);
+    cpj_string_t segment_base = cpj_path_get_segment(&it_base);
+    cpj_string_t segment_other = cpj_path_get_segment(&it_other);
+    if (segment_base.size != segment_other.size) {
+      intersection.equal_segment = 0;
       continue;
     }
-
-    // We add a separator if we previously wrote a segment. The last segment
-    // must not have a trailing separator. This must happen before the segment
-    // output, since we would override the null terminating character with
-    // reused buffers if this was done afterwards.
-    if (has_segment_output) {
-      pos += cpj_path_output_separator(path_style, buffer, buffer_size, pos);
+    if (!cpj_path_is_string_equal(
+          path_style, segment_base.ptr, segment_other.ptr, segment_base.size,
+          segment_base.size
+        )) {
+      intersection.equal_segment = 0;
+      continue;
     }
-
-    // Remember that we have segment output, so we can handle the trailing slash
-    // later on. This is necessary since we might have segments but they are all
-    // removed.
-    has_segment_output = true;
-
-    // Write out the segment but keep in mind that we need to follow the
-    // buffer size limitations. That's why we use the path output functions
-    // here.
-    pos += cpj_path_output_sized(
-      buffer, buffer_size, pos, sj.segment.begin, sj.segment.size
-    );
-  } while (cpj_path_get_next_segment_joined(path_style, &sj));
-
-  // Remove the trailing slash, but only if we have segment output. We don't
-  // want to remove anything from the root.
-  if (!has_segment_output && pos == 0) {
-    // This may happen if the path is absolute and all segments have been
-    // removed. We can not have an empty output - and empty output means we stay
-    // in the current directory. So we will output a ".".
-    assert(absolute == false);
-    pos += cpj_path_output_current(buffer, buffer_size, pos);
+    intersection.equal_segment += 1;
   }
-
-  // We must append a '\0' in any case, unless the buffer size is zero. If the
-  // buffer size is zero, which means we can not.
-done:
-  cpj_path_terminate_output(buffer, buffer_size, pos);
-
-  // And finally let our caller know about the total size of the normalized
-  // path.
-  return pos;
+  return intersection;
 }
 
-cpj_size_t cpj_path_get_absolute_test(
-  cpj_path_style_t path_style, const cpj_char_t *base, const cpj_char_t *path,
+static cpj_size_t cpj_path_relative_generate(
+  cpj_path_style_t path_style, cpj_path_intersection_t *intersection,
+  cpj_char_t *buffer, cpj_size_t buffer_size, cpj_size_t buffer_index
+)
+{
+  cpj_size_t segment_eat_count;
+  if (intersection->equal_segment == intersection->segment_count_base) {
+    if (intersection->equal_segment == intersection->segment_count_other) {
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '\0'
+      );
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '.'
+      );
+      segment_eat_count = 2;
+    } else {
+      segment_eat_count = 0;
+    }
+  } else {
+    cpj_size_t k = intersection->segment_count_base;
+    segment_eat_count = 0;
+    if (intersection->equal_segment == intersection->segment_count_other) {
+      --k;
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '\0'
+      );
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '.'
+      );
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '.'
+      );
+      segment_eat_count += 3;
+    }
+    for (; k > intersection->equal_segment;) {
+      --k;
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '/'
+      );
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '.'
+      );
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '.'
+      );
+      segment_eat_count += 3;
+    }
+  }
+  return segment_eat_count;
+}
+
+cpj_size_t cpj_path_get_relative(
+  cpj_path_style_t path_style, const cpj_string_t *cwd_directory,
+  const cpj_string_t *path_directory, const cpj_string_t *path,
   cpj_char_t *buffer, cpj_size_t buffer_size
 )
 {
-  cpj_size_t i;
-  const cpj_char_t *paths[4];
-
-  // The basename should be an absolute path if the caller is using the API
-  // correctly. However, he might not and in that case we will append a fake
-  // root at the beginning.
-  if (cpj_path_is_absolute(path_style, base)) {
-    i = 0;
-  } else if (path_style == CPJ_STYLE_WINDOWS) {
-    paths[0] = "\\";
-    i = 1;
-  } else {
-    paths[0] = "/";
-    i = 1;
-  }
-
-  if (cpj_path_is_absolute(path_style, path)) {
-    // If the submitted path is not relative the base path becomes irrelevant.
-    // We will only normalize the submitted path instead.
-    paths[i++] = path;
-    paths[i] = NULL;
-  } else {
-    // Otherwise we append the relative path to the base path and normalize it.
-    // The result will be a new absolute path.
-    paths[i++] = base;
-    paths[i++] = path;
-    paths[i] = NULL;
-  }
-
-  // Finally join everything together and normalize it.
-  return cpj_path_join_and_normalize_multiple(
-    path_style, paths, buffer, buffer_size
+  const cpj_string_t path_base_original[] = {*cwd_directory, *path_directory};
+  const cpj_string_t path_other_original[] = {*cwd_directory, *path};
+  const cpj_string_t *path_base = path_base_original + 2 - 1;
+  const cpj_string_t *path_other = path_other_original + 2 - 1;
+  cpj_size_t path_count = 1;
+  cpj_path_intersection_t intersection = cpj_path_get_intersection_segments(
+    path_style, path_base, path_other, path_count
   );
-}
-
-static void cpj_path_skip_segments_until_diverge(
-  cpj_path_style_t path_style, struct cpj_segment_joined *bsj,
-  struct cpj_segment_joined *osj, bool absolute, bool *base_available,
-  bool *other_available
-)
-{
-  // Now looping over all segments until they start to diverge. A path may
-  // diverge if two segments are not equal or if one path reaches the end.
-  do {
-
-    // Check whether there is anything available after we skip everything which
-    // is invisible. We do that for both paths, since we want to let the caller
-    // know which path has some trailing segments after they diverge.
-    *base_available =
-      cpj_path_segment_joined_skip_invisible(path_style, bsj, absolute);
-    *other_available =
-      cpj_path_segment_joined_skip_invisible(path_style, osj, absolute);
-
-    // We are done if one or both of those paths reached the end. They either
-    // diverge or both reached the end - but in both cases we can not continue
-    // here.
-    if (!*base_available || !*other_available) {
-      break;
-    }
-
-    // Compare the content of both segments. We are done if they are not equal,
-    // since they diverge.
-    if (!cpj_path_is_string_equal(
-          path_style, bsj->segment.begin, osj->segment.begin, bsj->segment.size,
-          osj->segment.size
-        )) {
-      break;
-    }
-
-    // We keep going until one of those segments reached the end. The next
-    // segment might be invisible, but we will check for that in the beginning
-    // of the loop once again.
-    *base_available = cpj_path_get_next_segment_joined(path_style, bsj);
-    *other_available = cpj_path_get_next_segment_joined(path_style, osj);
-  } while (*base_available && *other_available);
-}
-
-cpj_size_t cpj_path_get_relative_test(
-  cpj_path_style_t path_style, const cpj_char_t *base_directory,
-  const cpj_char_t *path, cpj_char_t *buffer, cpj_size_t buffer_size
-)
-{
-  cpj_size_t pos, base_root_length, path_root_length;
-  bool absolute, base_available, other_available, has_output;
-  const cpj_char_t *base_paths[2], *other_paths[2];
-  struct cpj_segment_joined bsj, osj;
-
-  pos = 0;
-
-  // First we compare the roots of those two paths. If the roots are not equal
-  // we can't continue, since there is no way to get a relative path from
-  // different roots.
-  base_root_length = cpj_path_get_root(path_style, base_directory);
-  path_root_length = cpj_path_get_root(path_style, path);
-  if (base_root_length != path_root_length ||
-      !cpj_path_is_string_equal(
-        path_style, base_directory, path, base_root_length, path_root_length
-      )) {
-    cpj_path_terminate_output(buffer, buffer_size, pos);
-    return pos;
-  }
-
-  // Verify whether this is an absolute path. We need to know that since we can
-  // remove all back-segments if it is.
-  absolute =
-    cpj_path_is_root_absolute(path_style, base_directory, base_root_length);
-
-  // Initialize our joined segments. This will allow us to use the internal
-  // functions to skip until diverge and invisible. We only have one path in
-  // them though.
-  base_paths[0] = base_directory;
-  base_paths[1] = NULL;
-  other_paths[0] = path;
-  other_paths[1] = NULL;
-  cpj_path_get_first_segment_joined(path_style, base_paths, &bsj);
-  cpj_path_get_first_segment_joined(path_style, other_paths, &osj);
-
-  // Okay, now we skip until the segments diverge. We don't have anything to do
-  // with the segments which are equal.
-  cpj_path_skip_segments_until_diverge(
-    path_style, &bsj, &osj, absolute, &base_available, &other_available
-  );
-
-  // Assume there is no output until we have got some. We will need this
-  // information later on to remove trailing slashes or alternatively output a
-  // current-segment.
-  has_output = false;
-
-  // So if we still have some segments left in the base path we will now output
-  // a back segment for all of them.
-  if (base_available) {
-    do {
-      // Skip any invisible segment. We don't care about those and we don't need
-      // to navigate back because of them.
-      if (!cpj_path_segment_joined_skip_invisible(path_style, &bsj, absolute)) {
-        break;
-      }
-
-      // Toggle the flag if we have output. We need to remember that, since we
-      // want to remove the trailing slash.
-      has_output = true;
-
-      // Output the back segment and a separator. No need to worry about the
-      // superfluous segment since it will be removed later on.
-      pos += cpj_path_output_back(buffer, buffer_size, pos);
-      pos += cpj_path_output_separator(path_style, buffer, buffer_size, pos);
-    } while (cpj_path_get_next_segment_joined(path_style, &bsj));
-  }
-
-  // And if we have some segments available of the target path we will output
-  // all of those.
-  if (other_available) {
-    do {
-      // Again, skip any invisible segments since we don't need to navigate into
-      // them.
-      if (!cpj_path_segment_joined_skip_invisible(path_style, &osj, absolute)) {
-        break;
-      }
-
-      // Toggle the flag if we have output. We need to remember that, since we
-      // want to remove the trailing slash.
-      has_output = true;
-
-      // Output the current segment and a separator. No need to worry about the
-      // superfluous segment since it will be removed later on.
-      pos += cpj_path_output_sized(
-        buffer, buffer_size, pos, osj.segment.begin, osj.segment.size
+  if (intersection.equal_segment == 0) {
+    path_base = path_base_original;
+    path_other = path_other_original;
+    path_count = 2;
+    intersection = cpj_path_get_intersection_segments(
+      path_style, path_base, path_other, path_count
+    );
+    if (intersection.equal_segment == 0) {
+      return cpj_path_join_multiple(
+        path_style, true, true, path_other, path_count, buffer, buffer_size
       );
-      pos += cpj_path_output_separator(path_style, buffer, buffer_size, pos);
-    } while (cpj_path_get_next_segment_joined(path_style, &osj));
+    }
   }
-
-  // If we have some output by now we will have to remove the trailing slash. We
-  // simply do that by moving back one character. The terminate output function
-  // will then place the '\0' on this position. Otherwise, if there is no
-  // output, we will have to output a "current directory", since the target path
-  // points to the base path.
-  if (has_output) {
-    --pos;
-  } else {
-    pos += cpj_path_output_current(buffer, buffer_size, pos);
+  {
+    cpj_segment_iterator_t it_other =
+      cpj_path_interator_init(path_style, true, true, path_other, path_count);
+    cpj_size_t segment_eat_count =
+      cpj_path_relative_generate(path_style, &intersection, NULL, 0, 0);
+    cpj_size_t other_path_length;
+    if (intersection.equal_segment == intersection.segment_count_other) {
+      other_path_length = 0;
+    } else {
+      cpj_size_t k = intersection.segment_count_other;
+      for (; k > intersection.equal_segment;) {
+        k -= 1;
+        cpj_path_get_prev_segment(path_style, &it_other);
+      }
+      const cpj_string_t segment = cpj_path_get_segment(&it_other);
+      cpj_string_t path_other_normalize[2];
+      cpj_size_t path_other_normalize_count;
+      path_other_normalize[0] = it_other.path_list_p[it_other.list_pos];
+      path_other_normalize[0].ptr = segment.ptr;
+      path_other_normalize[0]
+        .size = it_other.path_list_p[it_other.list_pos].ptr +
+                it_other.path_list_p[it_other.list_pos].size - segment.ptr;
+      if (it_other.list_pos == 0 && it_other.path_list_count == 2) {
+        path_other_normalize_count = 2;
+        path_other_normalize[1] = it_other.path_list_p[1];
+      } else {
+        path_other_normalize_count = 1;
+      }
+      cpj_char_t *buffer_other = NULL;
+      cpj_size_t buffer_size_other = 0;
+      if (buffer && buffer_size > segment_eat_count) {
+        buffer_other = buffer + segment_eat_count;
+        buffer_size_other = buffer_size - segment_eat_count;
+      }
+      other_path_length = cpj_path_join_multiple(
+        path_style, true, true, path_other_normalize,
+        path_other_normalize_count, buffer_other, buffer_size_other
+      );
+    }
+    if (buffer) {
+      cpj_path_relative_generate(
+        path_style, &intersection, buffer, buffer_size, segment_eat_count
+      );
+    }
+    return other_path_length == 0 ? segment_eat_count - 1
+                                  : segment_eat_count + other_path_length;
   }
-
-  // Finally, we can terminate the output - which means we place a '\0' at the
-  // current position or at the end of the buffer.
-  cpj_path_terminate_output(buffer, buffer_size, pos);
-
-  return pos;
-}
-
-cpj_size_t cpj_path_join_test(
-  cpj_path_style_t path_style, const cpj_char_t *path_a,
-  const cpj_char_t *path_b, cpj_char_t *buffer, cpj_size_t buffer_size
-)
-{
-  const cpj_char_t *paths[3];
-
-  // This is simple. We will just create an array with the two paths which we
-  // wish to join.
-  paths[0] = path_a;
-  paths[1] = path_b;
-  paths[2] = NULL;
-
-  // And then call the join and normalize function which will do the hard work
-  // for us.
-  return cpj_path_join_and_normalize_multiple(
-    path_style, paths, buffer, buffer_size
-  );
-}
-
-cpj_size_t cpj_path_join_multiple_test(
-  cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
-  cpj_size_t buffer_size
-)
-{
-  // We can just call the internal join and normalize function for this one,
-  // since it will handle everything.
-  return cpj_path_join_and_normalize_multiple(
-    path_style, paths, buffer, buffer_size
-  );
-}
-
-cpj_size_t
-cpj_path_get_root(cpj_path_style_t path_style, const cpj_char_t *path)
-{
-  cpj_size_t length;
-  // We use a different implementation here based on the configuration of the
-  // library.
-  if (path_style == CPJ_STYLE_WINDOWS) {
-    cpj_path_get_root_windows(path, &length);
-  } else {
-    cpj_path_get_root_unix(path, &length);
-  }
-  return length;
-}
-
-cpj_size_t cpj_path_change_root_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
-)
-{
-  const cpj_char_t *tail;
-  cpj_size_t root_length, path_length, tail_length, new_root_length,
-    new_path_size;
-
-  // First we need to determine the actual size of the root which we will
-  // change.
-  root_length = cpj_path_get_root(path_style, path);
-
-  // Now we determine the sizes of the new root and the path. We need that to
-  // determine the size of the part after the root (the tail).
-  new_root_length = strlen(new_root);
-  path_length = strlen(path);
-
-  // Okay, now we calculate the position of the tail and the length of it.
-  tail = path + root_length;
-  tail_length = path_length - root_length;
-
-  // We first output the tail and then the new root, that's because the source
-  // path and the buffer may be overlapping. This way the root will not
-  // overwrite the tail.
-  cpj_path_output_sized(
-    buffer, buffer_size, new_root_length, tail, tail_length
-  );
-  cpj_path_output_sized(buffer, buffer_size, 0, new_root, new_root_length);
-
-  // Finally we calculate the size o the new path and terminate the output with
-  // a '\0'.
-  new_path_size = tail_length + new_root_length;
-  cpj_path_terminate_output(buffer, buffer_size, new_path_size);
-
-  return new_path_size;
+  return 0;
 }
 
 bool cpj_path_is_absolute(cpj_path_style_t path_style, const cpj_char_t *path)
 {
-  cpj_size_t length;
-
   // We grab the root of the path. This root does not include the first
   // separator of a path.
-  length = cpj_path_get_root(path_style, path);
+  cpj_size_t length = cpj_path_get_root(path_style, path);
 
   // Now we can determine whether the root is absolute or not.
-  return cpj_path_is_root_absolute(path_style, path, length);
+  return length > 0 ? cpj_path_is_separator(path_style, path[length - 1])
+                    : false;
 }
 
 bool cpj_path_is_relative(cpj_path_style_t path_style, const cpj_char_t *path)
@@ -1016,130 +741,84 @@ bool cpj_path_is_relative(cpj_path_style_t path_style, const cpj_char_t *path)
   return !cpj_path_is_absolute(path_style, path);
 }
 
-void cpj_path_get_basename_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t **basename, cpj_size_t *length
+cpj_size_t cpj_path_change_root(
+  cpj_path_style_t path_style, const cpj_string_t *path,
+  const cpj_string_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
 )
 {
-  struct cpj_segment segment;
-
-  // We get the last segment of the path. The last segment will contain the
-  // basename if there is any. If there are no segments we will set the basename
-  // to NULL and the length to 0.
-  if (!cpj_path_get_last_segment(path_style, path, &segment)) {
-    *basename = NULL;
-    if (length) {
-      *length = 0;
-    }
-    return;
-  }
-
-  // Now we can just output the segment contents, since that's our basename.
-  // There might be trailing separators after the basename, but the size does
-  // not include those.
-  *basename = segment.begin;
-  if (length) {
-    *length = segment.size;
-  }
-}
-
-cpj_size_t cpj_path_change_basename_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
-)
-{
-  struct cpj_segment segment;
-  cpj_size_t pos, root_size, new_basename_size;
-
-  // First we try to get the last segment. We may only have a root without any
-  // segments, in which case we will create one.
-  if (!cpj_path_get_last_segment(path_style, path, &segment)) {
-
-    // So there is no segment in this path. First we grab the root and output
-    // that. We are not going to modify the root in any way.
-    root_size = cpj_path_get_root(path_style, path);
-    pos = cpj_path_output_sized(buffer, buffer_size, 0, path, root_size);
-
-    // We have to trim the separators from the beginning of the new basename.
-    // This is quite easy to do.
-    while (cpj_path_is_separator(path_style, new_basename)) {
-      ++new_basename;
-    }
-
-    // Now we measure the length of the new basename, this is a two step
-    // process. First we find the '\0' character at the end of the string.
-    new_basename_size = 0;
-    while (new_basename[new_basename_size]) {
-      ++new_basename_size;
-    }
-
-    // And then we trim the separators at the end of the basename until we reach
-    // the first valid character.
-    while (
-      new_basename_size > 0 &&
-      cpj_path_is_separator(path_style, &new_basename[new_basename_size - 1])
-    ) {
-      --new_basename_size;
-    }
-
-    // Now we will output the new basename after the root.
-    pos += cpj_path_output_sized(
-      buffer, buffer_size, pos, new_basename, new_basename_size
-    );
-
-    // And finally terminate the output and return the total size of the path.
-    cpj_path_terminate_output(buffer, buffer_size, pos);
-    return pos;
-  }
-
-  // If there is a last segment we can just forward this call, which is fairly
-  // easy.
-  return cpj_path_change_segment(
-    path_style, &segment, new_basename, buffer, buffer_size
+  cpj_size_t root_length = cpj_path_get_root(path_style, path->ptr);
+  cpj_string_t paths[2];
+  paths[0] = *new_root;
+  paths[1].ptr = path->ptr + root_length;
+  paths[1].size = path->size - root_length;
+  return cpj_path_join_multiple(
+    path_style, false, true, paths, 2, buffer, buffer_size
   );
 }
 
-void cpj_path_get_dirname_test(
-  cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t *length
+cpj_size_t cpj_path_get_intersection(
+  cpj_path_style_t path_style, const cpj_string_t *path_base,
+  const cpj_string_t *path_other
 )
 {
-  struct cpj_segment segment;
-
-  // We get the last segment of the path. The last segment will contain the
-  // basename if there is any. If there are no segments we will set the length
-  // to 0.
-  if (!cpj_path_get_last_segment(path_style, path, &segment)) {
-    *length = 0;
-    return;
+  cpj_path_intersection_t intersection =
+    cpj_path_get_intersection_segments(path_style, path_base, path_other, 1);
+  cpj_segment_iterator_t
+    it_base = cpj_path_interator_init(path_style, false, true, path_base, 1);
+  cpj_size_t k;
+  if (intersection.equal_segment == 0) {
+    return 0;
   }
-
-  // We can now return the length from the beginning of the string up to the
-  // beginning of the last segment.
-  *length = (cpj_size_t)(segment.begin - path);
+  for (k = intersection.segment_count_base; k >= intersection.equal_segment;) {
+    k -= 1;
+    cpj_path_get_prev_segment(path_style, &it_base);
+  }
+  cpj_string_t segment = cpj_path_get_segment(&it_base);
+  return segment.ptr - path_base->ptr + segment.size;
 }
 
-bool cpj_path_get_extension_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t **extension, cpj_size_t *length
+cpj_size_t cpj_path_change_basename(
+  cpj_path_style_t path_style, const cpj_string_t *path,
+  const cpj_string_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
 )
 {
-  struct cpj_segment segment;
+  cpj_string_t paths[2] = {*path, *new_basename};
+  cpj_string_t basename;
+  // First we try to get the last segment. We may only have a root without any
+  // segments, in which case we will create one.
+  cpj_path_get_basename(path_style, path, &basename);
+  paths[0].size -= basename.size;
+  return cpj_path_join_multiple(
+    path_style, true, true, paths, 2, buffer, buffer_size
+  );
+}
+
+bool cpj_path_get_extension(
+  cpj_path_style_t path_style, const cpj_string_t *path, cpj_string_t *extension
+)
+{
   const cpj_char_t *c;
+  cpj_string_t basename;
+  // First we try to get the last segment. We may only have a root without any
+  // segments, in which case we will create one.
+  cpj_path_get_basename(path_style, path, &basename);
 
   // We get the last segment of the path. The last segment will contain the
   // extension if there is any.
-  if (!cpj_path_get_last_segment(path_style, path, &segment)) {
+  if (basename.size == 0) {
     return false;
   }
 
   // Now we search for a dot within the segment. If there is a dot, we consider
   // the rest of the segment the extension. We do this from the end towards the
   // beginning, since we want to find the last dot.
-  for (c = segment.end; c >= segment.begin; --c) {
+  for (c = basename.ptr + basename.size - 1; c >= basename.ptr; --c) {
     if (*c == '.') {
       // Okay, we found an extension. We can stop looking now.
-      *extension = c;
-      *length = (cpj_size_t)(segment.end - c);
+      if (extension) {
+        extension->ptr = c;
+        extension->size = (cpj_size_t)(basename.ptr + basename.size - c);
+      }
       return true;
     }
   }
@@ -1148,398 +827,80 @@ bool cpj_path_get_extension_test(
   return false;
 }
 
-bool cpj_path_has_extension_test(cpj_path_style_t path_style, const cpj_char_t *path)
+cpj_size_t
+cpj_path_get_dirname(cpj_path_style_t path_style, const cpj_string_t *path)
 {
-  const cpj_char_t *extension;
-  cpj_size_t length;
-
-  // We just wrap the get_extension call which will then do the work for us.
-  return cpj_path_get_extension_test(path_style, path, &extension, &length);
-}
-
-cpj_size_t cpj_path_change_extension_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
-)
-{
-  struct cpj_segment segment;
-  const cpj_char_t *c, *old_extension;
-  cpj_size_t pos, root_size, trail_size, new_extension_size;
-
+  cpj_string_t basename;
   // First we try to get the last segment. We may only have a root without any
   // segments, in which case we will create one.
-  if (!cpj_path_get_last_segment(path_style, path, &segment)) {
+  cpj_path_get_basename(path_style, path, &basename);
 
-    // So there is no segment in this path. First we grab the root and output
-    // that. We are not going to modify the root in any way. If there is no
-    // root, this will end up with a root size 0, and nothing will be written.
-    root_size = cpj_path_get_root(path_style, path);
-    pos = cpj_path_output_sized(buffer, buffer_size, 0, path, root_size);
+  // We can now return the length from the beginning of the string up to the
+  // beginning of the last segment.
+  return basename.ptr ? (cpj_size_t)(basename.ptr - path->ptr) : path->size;
+}
 
-    // Add a dot if the submitted value doesn't have any.
-    if (*new_extension != '.') {
-      pos += cpj_path_output_dot(buffer, buffer_size, pos);
+cpj_size_t cpj_path_change_extension(
+  cpj_path_style_t path_style, const cpj_string_t *path,
+  const cpj_string_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
+)
+{
+  bool new_extention_start_with_dot = new_extension->size > 0 &&
+                                      new_extension->ptr[0] == '.';
+  if (cpj_path_get_root(path_style, path->ptr) == path->size) {
+    cpj_size_t buffer_size_needed = path->size + new_extension->size + 1;
+    if (!new_extention_start_with_dot) {
+      buffer_size_needed += 1;
     }
-
-    // And finally terminate the output and return the total size of the path.
-    pos += cpj_path_output(buffer, buffer_size, pos, new_extension);
-    cpj_path_terminate_output(buffer, buffer_size, pos);
-    return pos;
-  }
-
-  // Now we seek the old extension in the last segment, which we will replace
-  // with the new one. If there is no old extension, it will point to the end of
-  // the segment.
-  old_extension = segment.end;
-  for (c = segment.begin; c < segment.end; ++c) {
-    if (*c == '.') {
-      old_extension = c;
+    cpj_size_t buffer_index = buffer_size_needed;
+    cpj_path_push_front_char(
+      path_style, buffer, buffer_size, &buffer_index, '\0'
+    );
+    cpj_path_push_front_string(
+      path_style, buffer, buffer_size, &buffer_index, new_extension
+    );
+    if (!new_extention_start_with_dot) {
+      cpj_path_push_front_char(
+        path_style, buffer, buffer_size, &buffer_index, '.'
+      );
     }
-  }
-
-  pos = cpj_path_output_sized(
-    buffer, buffer_size, 0, segment.path,
-    (cpj_size_t)(old_extension - segment.path)
-  );
-
-  // If the new extension starts with a dot, we will skip that dot. We always
-  // output exactly one dot before the extension. If the extension contains
-  // multiple dots, we will output those as part of the extension.
-  if (*new_extension == '.') {
-    ++new_extension;
-  }
-
-  // We calculate the size of the new extension, including the dot, in order to
-  // output the trail - which is any part of the path coming after the
-  // extension. We must output this first, since the buffer may overlap with the
-  // submitted path - and it would be overridden by longer extensions.
-  new_extension_size = strlen(new_extension) + 1;
-  trail_size =
-    cpj_path_output(buffer, buffer_size, pos + new_extension_size, segment.end);
-
-  // Finally we output the dot and the new extension. The new extension itself
-  // doesn't contain the dot anymore, so we must output that first.
-  pos += cpj_path_output_dot(buffer, buffer_size, pos);
-  pos += cpj_path_output(buffer, buffer_size, pos, new_extension);
-
-  // Now we terminate the output with a null-terminating character, but before
-  // we do that we must add the size of the trail to the position which we
-  // output before.
-  pos += trail_size;
-  cpj_path_terminate_output(buffer, buffer_size, pos);
-
-  // And the position is our output size now.
-  return pos;
-}
-
-cpj_size_t cpj_path_normalize_test(
-  cpj_path_style_t path_style, const cpj_char_t *path, cpj_char_t *buffer,
-  cpj_size_t buffer_size
-)
-{
-  const cpj_char_t *paths[2];
-
-  // Now we initialize the paths which we will normalize. Since this function
-  // only supports submitting a single path, we will only add that one.
-  paths[0] = path;
-  paths[1] = NULL;
-
-  return cpj_path_join_and_normalize_multiple(
-    path_style, paths, buffer, buffer_size
-  );
-}
-
-cpj_size_t cpj_path_get_intersection_test(
-  cpj_path_style_t path_style, const cpj_char_t *path_base,
-  const cpj_char_t *path_other
-)
-{
-  bool absolute;
-  cpj_size_t base_root_length, other_root_length;
-  const cpj_char_t *end;
-  const cpj_char_t *paths_base[2], *paths_other[2];
-  struct cpj_segment_joined base, other;
-
-  // We first compare the two roots. We just return zero if they are not equal.
-  // This will also happen to return zero if the paths are mixed relative and
-  // absolute.
-  base_root_length = cpj_path_get_root(path_style, path_base);
-  other_root_length = cpj_path_get_root(path_style, path_other);
-  if (!cpj_path_is_string_equal(
-        path_style, path_base, path_other, base_root_length, other_root_length
-      )) {
-    return 0;
-  }
-
-  // Configure our paths. We just have a single path in here for now.
-  paths_base[0] = path_base;
-  paths_base[1] = NULL;
-  paths_other[0] = path_other;
-  paths_other[1] = NULL;
-
-  // So we get the first segment of both paths. If one of those paths don't have
-  // any segment, we will return 0.
-  if (!cpj_path_get_first_segment_joined(path_style, paths_base, &base) ||
-      !cpj_path_get_first_segment_joined(path_style, paths_other, &other)) {
-    return base_root_length;
-  }
-
-  // We now determine whether the path is absolute or not. This is required
-  // because if will ignore removed segments, and this behaves differently if
-  // the path is absolute. However, we only need to check the base path because
-  // we are guaranteed that both paths are either relative or absolute.
-  absolute = cpj_path_is_root_absolute(path_style, path_base, base_root_length);
-
-  // We must keep track of the end of the previous segment. Initially, this is
-  // set to the beginning of the path. This means that 0 is returned if the
-  // first segment is not equal.
-  end = path_base + base_root_length;
-
-  // Now we loop over both segments until one of them reaches the end or their
-  // contents are not equal.
-  do {
-    // We skip all segments which will be removed in each path, since we want to
-    // know about the true path.
-    if (!cpj_path_segment_joined_skip_invisible(path_style, &base, absolute) ||
-        !cpj_path_segment_joined_skip_invisible(path_style, &other, absolute)) {
-      break;
+    cpj_path_push_front_string(
+      path_style, buffer, buffer_size, &buffer_index, path
+    );
+    return buffer_size_needed - 1;
+  } else {
+    cpj_string_t paths[2] = {*path, *new_extension};
+    cpj_string_t extention;
+    if (cpj_path_get_extension(path_style, &(paths[0]), &extention)) {
+      paths[0].size = extention.ptr - paths[0].ptr;
     }
-
-    if (!cpj_path_is_string_equal(
-          path_style, base.segment.begin, other.segment.begin,
-          base.segment.size, other.segment.size
-        )) {
-      // So the content of those two segments are not equal. We will return the
-      // size up to the beginning.
-      return (cpj_size_t)(end - path_base);
+    if (new_extention_start_with_dot) {
+      paths[1].ptr += 1;
+      paths[1].size -= 1;
     }
-
-    // Remember the end of the previous segment before we go to the next one.
-    end = base.segment.end;
-  } while (cpj_path_get_next_segment_joined(path_style, &base) &&
-           cpj_path_get_next_segment_joined(path_style, &other));
-
-  // Now we calculate the length up to the last point where our paths pointed to
-  // the same place.
-  return (cpj_size_t)(end - path_base);
-}
-
-bool cpj_path_get_first_segment(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  struct cpj_segment *segment
-)
-{
-  cpj_size_t length;
-  const cpj_char_t *segments;
-
-  // We skip the root since that's not part of the first segment. The root is
-  // treated as a separate entity.
-  length = cpj_path_get_root(path_style, path);
-  segments = path + length;
-
-  // Now, after we skipped the root we can continue and find the actual segment
-  // content.
-  return cpj_path_get_first_segment_without_root(
-    path_style, path, segments, segment
-  );
-}
-
-bool cpj_path_get_last_segment(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  struct cpj_segment *segment
-)
-{
-  // We first grab the first segment. This might be our last segment as well,
-  // but we don't know yet. There is no last segment if there is no first
-  // segment, so we return false in that case.
-  if (!cpj_path_get_first_segment(path_style, path, segment)) {
-    return false;
-  }
-
-  // Now we find our last segment. The segment struct of the caller
-  // will contain the last segment, since the function we call here will not
-  // change the segment struct when it reaches the end.
-  while (cpj_path_get_next_segment(path_style, segment)) {
-    // We just loop until there is no other segment left.
-  }
-
-  return true;
-}
-
-bool cpj_path_get_next_segment(
-  cpj_path_style_t path_style, struct cpj_segment *segment
-)
-{
-  const cpj_char_t *c;
-
-  // First we jump to the end of the previous segment. The first character must
-  // be either a '\0' or a separator.
-  c = segment->begin + segment->size;
-  if (*c == '\0') {
-    return false;
-  }
-
-  // Now we skip all separator until we reach something else. We are not yet
-  // guaranteed to have a segment, since the string could just end afterwards.
-  assert(cpj_path_is_separator(path_style, c));
-  do {
-    ++c;
-  } while (cpj_path_is_separator(path_style, c));
-
-  // If the string ends here, we can safely assume that there is no other
-  // segment after this one.
-  if (*c == '\0') {
-    return false;
-  }
-
-  // Now we are safe to assume there is a segment. We store the beginning of
-  // this segment in the segment struct of the caller.
-  segment->begin = c;
-
-  // And now determine the size of this segment, and store it in the struct of
-  // the caller as well.
-  c = cpj_path_find_next_stop(path_style, c);
-  segment->end = c;
-  segment->size = (cpj_size_t)(c - segment->begin);
-
-  // Tell the caller that we found a segment.
-  return true;
-}
-
-bool cpj_path_get_previous_segment(
-  cpj_path_style_t path_style, struct cpj_segment *segment
-)
-{
-  const cpj_char_t *c;
-
-  // The current position might point to the first character of the path, which
-  // means there are no previous segments available.
-  c = segment->begin;
-  if (c <= segment->segments) {
-    return false;
-  }
-
-  // We move towards the beginning of the path until we either reached the
-  // beginning or the character is no separator anymore.
-  do {
-    --c;
-    if (c < segment->segments) {
-      // So we reached the beginning here and there is no segment. So we return
-      // false and don't change the segment structure submitted by the caller.
-      return false;
+    cpj_size_t path_size = cpj_path_join_multiple(
+      path_style, true, true, paths, 2, buffer, buffer_size
+    );
+    if (paths[1].size > 0) {
+      cpj_size_t pos = path_size - paths[1].size;
+      if (pos > 0 && pos < buffer_size) {
+        buffer[pos - 1] = '.';
+      }
     }
-  } while (cpj_path_is_separator(path_style, c));
-
-  // We are guaranteed now that there is another segment, since we moved before
-  // the previous separator and did not reach the segment path beginning.
-  segment->end = c + 1;
-  segment
-    ->begin = cpj_path_find_previous_stop(path_style, segment->segments, c);
-  segment->size = (cpj_size_t)(segment->end - segment->begin);
-
-  return true;
+    return path_size;
+  }
 }
 
-enum cpj_segment_type
-cpj_path_get_segment_type(const struct cpj_segment *segment)
-{
-  // We just make a string comparison with the segment contents and return the
-  // appropriate type.
-  if (strncmp(segment->begin, ".", segment->size) == 0) {
-    return CPJ_CURRENT;
-  } else if (strncmp(segment->begin, "..", segment->size) == 0) {
-    return CPJ_BACK;
-  }
-
-  return CPJ_NORMAL;
-}
-
-bool cpj_path_is_separator(cpj_path_style_t path_style, const cpj_char_t *str)
-{
-  const cpj_char_t *c;
-
-  // We loop over all characters in the read symbols.
-  c = separators[path_style];
-  while (*c) {
-    if (*c == *str) {
-      return true;
-    }
-
-    ++c;
-  }
-
-  return false;
-}
-
-cpj_size_t cpj_path_change_segment(
-  cpj_path_style_t path_style, struct cpj_segment *segment,
-  const cpj_char_t *value, cpj_char_t *buffer, cpj_size_t buffer_size
-)
-{
-  cpj_size_t pos, value_size, tail_size;
-
-  // First we have to output the head, which is the whole string up to the
-  // beginning of the segment. This part of the path will just stay the same.
-  pos = cpj_path_output_sized(
-    buffer, buffer_size, 0, segment->path,
-    (cpj_size_t)(segment->begin - segment->path)
-  );
-
-  // In order to trip the submitted value, we will skip any separator at the
-  // beginning of it and behave as if it was never there.
-  while (cpj_path_is_separator(path_style, value)) {
-    ++value;
-  }
-
-  // Now we determine the length of the value. In order to do that we first
-  // locate the '\0'.
-  value_size = 0;
-  while (value[value_size]) {
-    ++value_size;
-  }
-
-  // Since we trim separators at the beginning and in the end of the value we
-  // have to subtract from the size until there are either no more characters
-  // left or the last character is no separator.
-  while (value_size > 0 &&
-         cpj_path_is_separator(path_style, &value[value_size - 1])) {
-    --value_size;
-  }
-
-  // We also have to determine the tail size, which is the part of the string
-  // following the current segment. This part will not change.
-  tail_size = strlen(segment->end);
-
-  // Now we output the tail. We have to do that, because if the buffer and the
-  // source are overlapping we would override the tail if the value is
-  // increasing in length.
-  cpj_path_output_sized(
-    buffer, buffer_size, pos + value_size, segment->end, tail_size
-  );
-
-  // Finally we can output the value in the middle of the head and the tail,
-  // where we have enough space to fit the whole trimmed value.
-  pos += cpj_path_output_sized(buffer, buffer_size, pos, value, value_size);
-
-  // Now we add the tail size to the current position and terminate the output -
-  // basically, ensure that there is a '\0' at the end of the buffer.
-  pos += tail_size;
-  cpj_path_terminate_output(buffer, buffer_size, pos);
-
-  // And now tell the caller how long the whole path would be.
-  return pos;
-}
-
-cpj_path_style_t cpj_path_guess_style_test(const cpj_char_t *path)
+cpj_path_style_t cpj_path_guess_style(const cpj_string_t *path)
 {
   const cpj_char_t *c;
   cpj_size_t root_length;
-  struct cpj_segment segment;
+  cpj_string_t basename;
 
   // First we determine the root. Only windows roots can be longer than a single
   // slash, so if we can determine that it starts with something like "C:", we
   // know that this is a windows path.
-  cpj_path_get_root_windows(path, &root_length);
+  root_length = cpj_path_get_root_windows(path->ptr);
   if (root_length > 1) {
     return CPJ_STYLE_WINDOWS;
   }
@@ -1547,11 +908,15 @@ cpj_path_style_t cpj_path_guess_style_test(const cpj_char_t *path)
   // Next we check for slashes. Windows uses backslashes, while unix uses
   // forward slashes. Windows actually supports both, but our best guess is to
   // assume windows with backslashes and unix with forward slashes.
-  for (c = path; *c; ++c) {
-    if (*c == *separators[CPJ_STYLE_UNIX]) {
-      return CPJ_STYLE_UNIX;
-    } else if (*c == *separators[CPJ_STYLE_WINDOWS]) {
+  for (c = path->ptr; *c; ++c) {
+    if (*c == '\\') {
       return CPJ_STYLE_WINDOWS;
+    }
+  }
+
+  for (c = path->ptr; *c; ++c) {
+    if (*c == '/') {
+      return CPJ_STYLE_UNIX;
     }
   }
 
@@ -1559,20 +924,21 @@ cpj_path_style_t cpj_path_guess_style_test(const cpj_char_t *path)
   // actually must be the first one), and determine whether the segment starts
   // with a dot. A dot is a hidden folder or file in the UNIX world, in that
   // case we assume the path to have UNIX style.
-  if (!cpj_path_get_last_segment(CPJ_STYLE_UNIX, path, &segment)) {
+  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename);
+  if (basename.ptr == NULL) {
     // We couldn't find any segments, so we default to a UNIX path style since
     // there is no way to make any assumptions.
     return CPJ_STYLE_UNIX;
   }
 
-  if (*segment.begin == '.') {
+  if (*basename.ptr == '.') {
     return CPJ_STYLE_UNIX;
   }
 
   // And finally we check whether the last segment contains a dot. If it
   // contains a dot, that might be an extension. Windows is more likely to have
   // file names with extensions, so our guess would be windows.
-  for (c = segment.begin; *c; ++c) {
+  for (c = basename.ptr; *c; ++c) {
     if (*c == '.') {
       return CPJ_STYLE_WINDOWS;
     }

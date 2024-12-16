@@ -47,34 +47,12 @@ typedef struct
   cpj_size_t size; /**< size of the string, excluding '\0' terminator */
 } cpj_string_t;
 
-/**
- * A segment represents a single component of a path. For instance, on linux a
- * path might look like this "/var/log/", which consists of two segments "var"
- * and "log".
- */
-struct cpj_segment
+typedef struct
 {
-  const cpj_char_t *path;
-  const cpj_char_t *segments;
-  const cpj_char_t *begin;
-  const cpj_char_t *end;
-  size_t size;
-};
-
-/**
- * The segment type can be used to identify whether a segment is a special
- * segment or not.
- *
- * CPJ_NORMAL - normal folder or file segment
- * CPJ_CURRENT - "./" current folder segment
- * CPJ_BACK - "../" relative back navigation segment
- */
-enum cpj_segment_type
-{
-  CPJ_NORMAL,
-  CPJ_CURRENT,
-  CPJ_BACK
-};
+  cpj_size_t segment_count_base;
+  cpj_size_t segment_count_other;
+  cpj_size_t equal_segment;
+} cpj_path_intersection_t;
 
 /**
  * @brief Determines the style which is used for the path parsing and
@@ -98,31 +76,6 @@ typedef enum
 #define CPJ_ZSTR_ARG(str) CPJ_ZSTR_LITERAL(str), ((cpj_size_t)(sizeof(str) - 1))
 
 /**
- * @brief Generates an absolute path based on a base.
- *
- * This function generates an absolute path based on a base path and another
- * path. It is guaranteed to return an absolute path. If the second submitted
- * path is absolute, it will override the base path. The result will be
- * written to a buffer, which might be truncated if the buffer is not large
- * enough to hold the full path. However, the truncated result will always be
- * null-terminated. The returned value is the amount of characters which the
- * resulting path would take if it was not truncated (excluding the
- * null-terminating character).
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param base The absolute base path on which the relative path will be
- * applied.
- * @param path The relative path which will be applied on the base path.
- * @param buffer The buffer where the result will be written to.
- * @param buffer_size The size of the result buffer.
- * @return Returns the total amount of characters of the new absolute path.
- */
-CPJ_PUBLIC cpj_size_t cpj_path_get_absolute_test(
-  cpj_path_style_t path_style, const cpj_char_t *base, const cpj_char_t *path,
-  cpj_char_t *buffer, cpj_size_t buffer_size
-);
-
-/**
  * @brief Generates a relative path based on a base.
  *
  * This function generates a relative path based on a base path and another
@@ -135,6 +88,8 @@ CPJ_PUBLIC cpj_size_t cpj_path_get_absolute_test(
  *
  * @param path_style Style depending on the operating system. So this should
  * detect whether we should use windows or unix paths.
+ * @param cwd_directory The current directory for prefix the relative paths when
+ * needed
  * @param base_directory The base path from which the relative path will
  * start.
  * @param path The target path where the relative path will point to.
@@ -142,34 +97,10 @@ CPJ_PUBLIC cpj_size_t cpj_path_get_absolute_test(
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the full path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_get_relative_test(
-  cpj_path_style_t path_style, const cpj_char_t *base_directory,
-  const cpj_char_t *path, cpj_char_t *buffer, cpj_size_t buffer_size
-);
-
-/**
- * @brief Joins two paths together.
- *
- * This function generates a new path by combining the two submitted paths. It
- * will remove double separators, and unlike cpj_path_get_absolute_test it
- * permits the use of two relative paths to combine. The result will be written
- * to a buffer, which might be truncated if the buffer is not large enough to
- * hold the full path. However, the truncated result will always be
- * null-terminated. The returned value is the amount of characters which the
- * resulting path would take if it was not truncated (excluding the
- * null-terminating character).
- *
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param path_a The first path which comes first.
- * @param path_b The second path which comes after the first.
- * @param buffer The buffer where the result will be written to.
- * @param buffer_size The size of the result buffer.
- * @return Returns the total amount of characters of the full, combined path.
- */
-CPJ_PUBLIC cpj_size_t cpj_path_join_test(
-  cpj_path_style_t path_style, const cpj_char_t *path_a,
-  const cpj_char_t *path_b, cpj_char_t *buffer, cpj_size_t buffer_size
+CPJ_PUBLIC cpj_size_t cpj_path_get_relative(
+  cpj_path_style_t path_style, const cpj_string_t *cwd_directory,
+  const cpj_string_t *path_directory, const cpj_string_t *path,
+  cpj_char_t *buffer, cpj_size_t buffer_size
 );
 
 /**
@@ -187,14 +118,26 @@ CPJ_PUBLIC cpj_size_t cpj_path_join_test(
  *
  * @param path_style Style depending on the operating system. So this should
  * detect whether we should use windows or unix paths.
- * @param paths An array of paths which will be joined.
- * @param buffer The buffer where the result will be written to.
+ * @param is_resolve If true, then the given sequence of paths is processed from
+ * right to left, with each subsequent path prepended until an absolute path is
+ * constructed. For instance, given the sequence of path segments: /foo, /bar,
+ *   baz, calling path.resolve('/foo', '/bar', 'baz') would return /bar/baz
+ * because 'baz' is not an absolute path but
+ *   '/bar' + '/' + 'baz' is.
+ * Otherwise all paths are joined.
+ * @param remove_trailing_slash If true then remove the trailing slash of a
+ * directory path otherwise preserved.
+ * @param path_list_p An array of paths which will be joined.
+ * @param path_list_count The count of array of paths.
+ * @param buffer_p The buffer where the result will be written to.
  * @param buffer_size The size of the result buffer.
- * @return Returns the total amount of characters of the full, combined path.
+ * @return Returns the size of the joined path, excluding the '\0' teminiator
  */
-CPJ_PUBLIC cpj_size_t cpj_path_join_multiple_test(
-  cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
-  cpj_size_t buffer_size
+CPJ_PUBLIC
+cpj_size_t cpj_path_join_multiple(
+  cpj_path_style_t path_style, bool is_resolve, bool remove_trailing_slash,
+  const cpj_string_t *path_list_p, cpj_size_t path_list_count,
+  cpj_char_t *buffer_p, cpj_size_t buffer_size
 );
 
 /**
@@ -231,9 +174,9 @@ cpj_path_get_root(cpj_path_style_t path_style, const cpj_char_t *path);
  * written to.
  * @return Returns the total amount of characters of the new path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_change_root_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
+CPJ_PUBLIC cpj_size_t cpj_path_change_root(
+  cpj_path_style_t path_style, const cpj_string_t *path,
+  const cpj_string_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
 );
 
 /**
@@ -278,12 +221,10 @@ cpj_path_is_relative(cpj_path_style_t path_style, const cpj_char_t *path);
  * detect whether we should use windows or unix paths.
  * @param path The path which will be inspected.
  * @param basename The output of the basename pointer.
- * @param length The output of the length of the basename. This may be
- * null if not required.
+ * @return Returns true if the path a root
  */
-CPJ_PUBLIC void cpj_path_get_basename_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t **basename, cpj_size_t *length
+CPJ_PUBLIC bool cpj_path_get_basename(
+  cpj_path_style_t path_style, const cpj_string_t *path, cpj_string_t *basename
 );
 
 /**
@@ -306,9 +247,9 @@ CPJ_PUBLIC void cpj_path_get_basename_test(
  * @return Returns the size which the complete new path would have if it was
  * not truncated.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_change_basename_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
+CPJ_PUBLIC cpj_size_t cpj_path_change_basename(
+  cpj_path_style_t path_style, const cpj_string_t *path,
+  const cpj_string_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
 );
 
 /**
@@ -322,11 +263,10 @@ CPJ_PUBLIC cpj_size_t cpj_path_change_basename_test(
  * @param path_style Style depending on the operating system. So this should
  * detect whether we should use windows or unix paths.
  * @param path The path which will be inspected.
- * @param length The length of the dirname.
+ * @return Returns the length of the dirname.
  */
-CPJ_PUBLIC void cpj_path_get_dirname_test(
-  cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t *length
-);
+CPJ_PUBLIC cpj_size_t
+cpj_path_get_dirname(cpj_path_style_t path_style, const cpj_string_t *path);
 
 /**
  * @brief Gets the extension of a file path.
@@ -341,28 +281,11 @@ CPJ_PUBLIC void cpj_path_get_dirname_test(
  * @param path_style Style depending on the operating system. So this should
  * detect whether we should use windows or unix paths.
  * @param path The path which will be inspected.
- * @param extension The output of the extension pointer.
- * @param length The output of the length of the extension.
+ * @param extension The output of the extension.
  * @return Returns true if an extension is found or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_get_extension_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t **extension, cpj_size_t *length
-);
-
-/**
- * @brief Determines whether the file path has an extension.
- *
- * This function determines whether the submitted file path has an extension.
- * This will evaluate to true if the last segment of the path contains a dot.
- *
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param path The path which will be inspected.
- * @return Returns true if the path has an extension or false otherwise.
- */
-CPJ_PUBLIC bool cpj_path_has_extension_test(
-  cpj_path_style_t path_style, const cpj_char_t *path
+CPJ_PUBLIC bool cpj_path_get_extension(
+  cpj_path_style_t path_style, const cpj_string_t *path, cpj_string_t *extension
 );
 
 /**
@@ -388,39 +311,28 @@ CPJ_PUBLIC bool cpj_path_has_extension_test(
  * @return Returns the total size which the output would have if it was not
  * truncated.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_change_extension_test(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  const cpj_char_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
+cpj_size_t cpj_path_change_extension(
+  cpj_path_style_t path_style, const cpj_string_t *path,
+  const cpj_string_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
 );
 
 /**
- * @brief Creates a normalized version of the path.
+ * @brief Finds common segments in two paths.
  *
- * This function creates a normalized version of the path within the specified
- * buffer. This function will not write out more than the specified buffer can
- * contain. However, the generated string is always null-terminated - even if
- * not the whole path is written out. The returned value is the amount of
- * characters which the resulting path would take if it was not truncated
- * (excluding the null-terminating character). The path may be the same memory
- * address as the buffer.
- *
- * The following will be true for the normalized path:
- * 1) "../" will be resolved.
- * 2) "./" will be removed.
- * 3) double separators will be fixed with a single separator.
- * 4) separator suffixes will be removed.
+ * This function finds common segments in two paths and returns the number
+ * segments that are equal from the beginning of the base path which are equal
+ * to the other path.
  *
  * @param path_style Style depending on the operating system. So this should
  * detect whether we should use windows or unix paths.
- * @param path The path which will be normalized.
- * @param buffer The buffer where the new path is written to.
- * @param buffer_size The size of the buffer.
- * @return The size which the complete normalized path has if it was not
- * truncated.
+ * @param path_base The base path which will be compared with the other path.
+ * @param path_other The other path which will compared with the base path.
+ * @return Returns the common segments information
  */
-CPJ_PUBLIC cpj_size_t cpj_path_normalize_test(
-  cpj_path_style_t path_style, const cpj_char_t *path, cpj_char_t *buffer,
-  cpj_size_t buffer_size
+CPJ_PUBLIC
+cpj_path_intersection_t cpj_path_get_intersection_segments(
+  cpj_path_style_t path_style, const cpj_string_t *path_base,
+  const cpj_string_t *path_other, cpj_size_t path_count
 );
 
 /**
@@ -436,135 +348,21 @@ CPJ_PUBLIC cpj_size_t cpj_path_normalize_test(
  * @param path_other The other path which will compared with the base path.
  * @return Returns the number of characters which are common in the base path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_get_intersection_test(
-  cpj_path_style_t path_style, const cpj_char_t *path_base,
-  const cpj_char_t *path_other
+CPJ_PUBLIC cpj_size_t cpj_path_get_intersection(
+  cpj_path_style_t path_style, const cpj_string_t *path_base,
+  const cpj_string_t *path_other
 );
 
 /**
- * @brief Gets the first segment of a path.
- *
- * This function finds the first segment of a path. The position of the
- * segment is set to the first character after the separator, and the length
- * counts all characters until the next separator (excluding the separator).
+ * @brief Checks whether the submitted character is a separator.
  *
  * @param path_style Style depending on the operating system. So this should
  * detect whether we should use windows or unix paths.
- * @param path The path which will be inspected.
- * @param segment The segment which will be extracted.
- * @return Returns true if there is a segment or false if there is none.
- */
-CPJ_PUBLIC bool cpj_path_get_first_segment(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  struct cpj_segment *segment
-);
-
-/**
- * @brief Gets the last segment of the path.
- *
- * This function gets the last segment of a path. This function may return
- * false if the path doesn't contain any segments, in which case the submitted
- * segment parameter is not modified. The position of the segment is set to
- * the first character after the separator, and the length counts all
- * characters until the end of the path (excluding the separator).
- *
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param path The path which will be inspected.
- * @param segment The segment which will be extracted.
- * @return Returns true if there is a segment or false if there is none.
- */
-CPJ_PUBLIC bool cpj_path_get_last_segment(
-  cpj_path_style_t path_style, const cpj_char_t *path,
-  struct cpj_segment *segment
-);
-
-/**
- * @brief Advances to the next segment.
- *
- * This function advances the current segment to the next segment. If there
- * are no more segments left, the submitted segment structure will stay
- * unchanged and false is returned.
- *
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param segment The current segment which will be advanced to the next one.
- * @return Returns true if another segment was found or false otherwise.
- */
-CPJ_PUBLIC bool cpj_path_get_next_segment(
-  cpj_path_style_t path_style, struct cpj_segment *segment
-);
-
-/**
- * @brief Moves to the previous segment.
- *
- * This function moves the current segment to the previous segment. If the
- * current segment is the first one, the submitted segment structure will stay
- * unchanged and false is returned.
- *
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param segment The current segment which will be moved to the previous one.
- * @return Returns true if there is a segment before this one or false
- * otherwise.
- */
-CPJ_PUBLIC bool cpj_path_get_previous_segment(
-  cpj_path_style_t path_style, struct cpj_segment *segment
-);
-
-/**
- * @brief Gets the type of the submitted path segment.
- *
- * This function inspects the contents of the segment and determines the type
- * of it. Currently, there are three types CPJ_NORMAL, CPJ_CURRENT and
- * CPJ_BACK. A CPJ_NORMAL segment is a normal folder or file entry. A
- * CPJ_CURRENT is a "./" and a CPJ_BACK a "../" segment.
- *
- * @param segment The segment which will be inspected.
- * @return Returns the type of the segment.
- */
-CPJ_PUBLIC enum cpj_segment_type
-cpj_path_get_segment_type(const struct cpj_segment *segment);
-
-/**
- * @brief Changes the content of a segment.
- *
- * This function overrides the content of a segment to the submitted value and
- * outputs the whole new path to the submitted buffer. The result might
- * require less or more space than before if the new value length differs from
- * the original length. The output is truncated if the new path is larger than
- * the submitted buffer size, but it is always null-terminated. The source of
- * the segment and the submitted buffer may be the same.
- *
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param segment The segment which will be modifier.
- * @param value The new content of the segment.
- * @param buffer The buffer where the modified path will be written to.
- * @param buffer_size The size of the output buffer.
- * @return Returns the total size which would have been written if the output
- * was not truncated.
- */
-CPJ_PUBLIC cpj_size_t cpj_path_change_segment(
-  cpj_path_style_t path_style, struct cpj_segment *segment,
-  const cpj_char_t *value, cpj_char_t *buffer, cpj_size_t buffer_size
-);
-
-/**
- * @brief Checks whether the submitted pointer points to a separator.
- *
- * This function simply checks whether the submitted pointer points to a
- * separator, which has to be null-terminated (but not necessarily after the
- * separator). The function will return true if it is a separator, or false
- * otherwise.
- *
- * @param path_style Style depending on the operating system. So this should
- * detect whether we should use windows or unix paths.
- * @param str A pointer to a string.
+ * @param ch A character
  * @return Returns true if it is a separator, or false otherwise.
  */
 CPJ_PUBLIC bool
-cpj_path_is_separator(cpj_path_style_t path_style, const cpj_char_t *str);
+cpj_path_is_separator(cpj_path_style_t path_style, const cpj_char_t ch);
 
 /**
  * @brief Guesses the path style.
@@ -576,7 +374,7 @@ cpj_path_is_separator(cpj_path_style_t path_style, const cpj_char_t *str);
  * @param path The path which will be inspected.
  * @return Returns the style which is most likely used for the path.
  */
-CPJ_PUBLIC cpj_path_style_t cpj_path_guess_style_test(const cpj_char_t *path);
+CPJ_PUBLIC cpj_path_style_t cpj_path_guess_style(const cpj_string_t *path);
 
 #ifdef __cplusplus
 } // extern "C"

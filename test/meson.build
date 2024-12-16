@@ -12,7 +12,6 @@ cpjtest_sources = files(
     'normalize_test.c',
     'relative_test.c',
     'root_test.c',
-    'segment_test.c',
     'windows_test.c',
 )
 

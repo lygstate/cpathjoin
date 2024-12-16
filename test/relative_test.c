@@ -87,16 +87,14 @@ int relative_relative_and_absolute(void)
 {
   cpj_char_t result[FILENAME_MAX];
   cpj_size_t length;
+  cpj_char_t *expected;
 
   *result = 1;
 
   length = cpj_path_get_relative_test(CPJ_STYLE_UNIX, "./foo", "/bar", result, sizeof(result));
 
-  if (length != 0) {
-    return EXIT_FAILURE;
-  }
-
-  if (*result != '\0') {
+  expected = "../bar";
+  if (length != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
 
@@ -107,17 +105,15 @@ int relative_different_roots(void)
 {
   cpj_char_t result[FILENAME_MAX];
   cpj_size_t length;
+  cpj_char_t *expected;
 
   *result = 1;
 
   length = cpj_path_get_relative_test(CPJ_STYLE_WINDOWS, "C:/path/same", "D:/path/same", result,
     sizeof(result));
 
-  if (length != 0) {
-    return EXIT_FAILURE;
-  }
-
-  if (*result != '\0') {
+  expected = "D:\\path\\same";
+  if (length != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
 
