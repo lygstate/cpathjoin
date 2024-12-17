@@ -719,7 +719,7 @@ done:
   return pos;
 }
 
-cpj_size_t cpj_path_get_absolute(
+cpj_size_t cpj_path_get_absolute_test(
   cpj_path_style_t path_style, const cpj_char_t *base, const cpj_char_t *path,
   cpj_char_t *buffer, cpj_size_t buffer_size
 )
@@ -801,7 +801,7 @@ static void cpj_path_skip_segments_until_diverge(
   } while (*base_available && *other_available);
 }
 
-cpj_size_t cpj_path_get_relative(
+cpj_size_t cpj_path_get_relative_test(
   cpj_path_style_t path_style, const cpj_char_t *base_directory,
   const cpj_char_t *path, cpj_char_t *buffer, cpj_size_t buffer_size
 )
@@ -914,7 +914,7 @@ cpj_size_t cpj_path_get_relative(
   return pos;
 }
 
-cpj_size_t cpj_path_join(
+cpj_size_t cpj_path_join_test(
   cpj_path_style_t path_style, const cpj_char_t *path_a,
   const cpj_char_t *path_b, cpj_char_t *buffer, cpj_size_t buffer_size
 )
@@ -934,7 +934,7 @@ cpj_size_t cpj_path_join(
   );
 }
 
-cpj_size_t cpj_path_join_multiple(
+cpj_size_t cpj_path_join_multiple_test(
   cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
   cpj_size_t buffer_size
 )
@@ -960,7 +960,7 @@ cpj_path_get_root(cpj_path_style_t path_style, const cpj_char_t *path)
   return length;
 }
 
-cpj_size_t cpj_path_change_root(
+cpj_size_t cpj_path_change_root_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
 )
@@ -1016,7 +1016,7 @@ bool cpj_path_is_relative(cpj_path_style_t path_style, const cpj_char_t *path)
   return !cpj_path_is_absolute(path_style, path);
 }
 
-void cpj_path_get_basename(
+void cpj_path_get_basename_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t **basename, cpj_size_t *length
 )
@@ -1043,7 +1043,7 @@ void cpj_path_get_basename(
   }
 }
 
-cpj_size_t cpj_path_change_basename(
+cpj_size_t cpj_path_change_basename_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
 )
@@ -1099,7 +1099,7 @@ cpj_size_t cpj_path_change_basename(
   );
 }
 
-void cpj_path_get_dirname(
+void cpj_path_get_dirname_test(
   cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t *length
 )
 {
@@ -1118,7 +1118,7 @@ void cpj_path_get_dirname(
   *length = (cpj_size_t)(segment.begin - path);
 }
 
-bool cpj_path_get_extension(
+bool cpj_path_get_extension_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t **extension, cpj_size_t *length
 )
@@ -1148,16 +1148,16 @@ bool cpj_path_get_extension(
   return false;
 }
 
-bool cpj_path_has_extension(cpj_path_style_t path_style, const cpj_char_t *path)
+bool cpj_path_has_extension_test(cpj_path_style_t path_style, const cpj_char_t *path)
 {
   const cpj_char_t *extension;
   cpj_size_t length;
 
   // We just wrap the get_extension call which will then do the work for us.
-  return cpj_path_get_extension(path_style, path, &extension, &length);
+  return cpj_path_get_extension_test(path_style, path, &extension, &length);
 }
 
-cpj_size_t cpj_path_change_extension(
+cpj_size_t cpj_path_change_extension_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
 )
@@ -1232,7 +1232,7 @@ cpj_size_t cpj_path_change_extension(
   return pos;
 }
 
-cpj_size_t cpj_path_normalize(
+cpj_size_t cpj_path_normalize_test(
   cpj_path_style_t path_style, const cpj_char_t *path, cpj_char_t *buffer,
   cpj_size_t buffer_size
 )
@@ -1249,7 +1249,7 @@ cpj_size_t cpj_path_normalize(
   );
 }
 
-cpj_size_t cpj_path_get_intersection(
+cpj_size_t cpj_path_get_intersection_test(
   cpj_path_style_t path_style, const cpj_char_t *path_base,
   const cpj_char_t *path_other
 )
@@ -1530,7 +1530,7 @@ cpj_size_t cpj_path_change_segment(
   return pos;
 }
 
-cpj_path_style_t cpj_path_guess_style(const cpj_char_t *path)
+cpj_path_style_t cpj_path_guess_style_test(const cpj_char_t *path)
 {
   const cpj_char_t *c;
   cpj_size_t root_length;

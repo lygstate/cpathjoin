@@ -1,9 +1,9 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <stdlib.h>
 
 int guess_empty_string(void)
 {
-  if (cpj_path_guess_style("") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test("") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
@@ -12,7 +12,7 @@ int guess_empty_string(void)
 
 int guess_unguessable(void)
 {
-  if (cpj_path_guess_style("myfile") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test("myfile") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
@@ -21,11 +21,11 @@ int guess_unguessable(void)
 
 int guess_extension(void)
 {
-  if (cpj_path_guess_style("myfile.txt") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("myfile.txt") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_guess_style("/a/directory/myfile.txt") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test("/a/directory/myfile.txt") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
@@ -34,11 +34,11 @@ int guess_extension(void)
 
 int guess_hidden_file(void)
 {
-  if (cpj_path_guess_style(".my_hidden_file") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test(".my_hidden_file") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_guess_style(".my_hidden_file.txt") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test(".my_hidden_file.txt") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
@@ -47,11 +47,11 @@ int guess_hidden_file(void)
 
 int guess_unix_separator(void)
 {
-  if (cpj_path_guess_style("/directory/other") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test("/directory/other") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_guess_style("/directory/other.txt") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test("/directory/other.txt") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
@@ -60,10 +60,10 @@ int guess_unix_separator(void)
 
 int guess_windows_separator(void)
 {
-  if (cpj_path_guess_style("\\directory\\other") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("\\directory\\other") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
-  if (cpj_path_guess_style("\\directory\\.other") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("\\directory\\.other") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
 
@@ -72,7 +72,7 @@ int guess_windows_separator(void)
 
 int guess_unix_root(void)
 {
-  if (cpj_path_guess_style("/directory") != CPJ_STYLE_UNIX) {
+  if (cpj_path_guess_style_test("/directory") != CPJ_STYLE_UNIX) {
     return EXIT_FAILURE;
   }
 
@@ -81,23 +81,23 @@ int guess_unix_root(void)
 
 int guess_windows_root(void)
 {
-  if (cpj_path_guess_style("C:\\test") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("C:\\test") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_guess_style("C:/test") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("C:/test") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_guess_style("C:test") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("C:test") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_guess_style("C:/.test") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("C:/.test") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
 
-  if (cpj_path_guess_style("C:/folder/.test") != CPJ_STYLE_WINDOWS) {
+  if (cpj_path_guess_style_test("C:/folder/.test") != CPJ_STYLE_WINDOWS) {
     return EXIT_FAILURE;
   }
 

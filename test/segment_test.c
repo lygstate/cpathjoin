@@ -1,4 +1,4 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CPJ_EXPORT __declspec(dllexport)
@@ -34,6 +35,17 @@ extern "C"
 
 typedef char cpj_char_t;
 typedef size_t cpj_size_t;
+#define CPJ_SIZE_MAX SIZE_MAX
+
+/**
+ * Description of a string for arguments passing
+ */
+typedef struct
+{
+  /**< pointer to the zero-terminated ASCII/UTF-8/CESU-8 string */
+  const cpj_char_t *ptr;
+  cpj_size_t size; /**< size of the string, excluding '\0' terminator */
+} cpj_string_t;
 
 /**
  * A segment represents a single component of a path. For instance, on linux a
@@ -75,6 +87,17 @@ typedef enum
 } cpj_path_style_t;
 
 /**
+ * Helper to generate a string literal with type const cpj_char_t *
+ */
+#define CPJ_ZSTR_LITERAL(str) ((const cpj_char_t *)(str ""))
+
+/**
+ * Helper to expand string literal to [string pointer, string size] argument
+ * pair.
+ */
+#define CPJ_ZSTR_ARG(str) CPJ_ZSTR_LITERAL(str), ((cpj_size_t)(sizeof(str) - 1))
+
+/**
  * @brief Generates an absolute path based on a base.
  *
  * This function generates an absolute path based on a base path and another
@@ -94,7 +117,7 @@ typedef enum
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the new absolute path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_get_absolute(
+CPJ_PUBLIC cpj_size_t cpj_path_get_absolute_test(
   cpj_path_style_t path_style, const cpj_char_t *base, const cpj_char_t *path,
   cpj_char_t *buffer, cpj_size_t buffer_size
 );
@@ -119,7 +142,7 @@ CPJ_PUBLIC cpj_size_t cpj_path_get_absolute(
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the full path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_get_relative(
+CPJ_PUBLIC cpj_size_t cpj_path_get_relative_test(
   cpj_path_style_t path_style, const cpj_char_t *base_directory,
   const cpj_char_t *path, cpj_char_t *buffer, cpj_size_t buffer_size
 );
@@ -128,10 +151,10 @@ CPJ_PUBLIC cpj_size_t cpj_path_get_relative(
  * @brief Joins two paths together.
  *
  * This function generates a new path by combining the two submitted paths. It
- * will remove double separators, and unlike cpj_path_get_absolute it permits
- * the use of two relative paths to combine. The result will be written to a
- * buffer, which might be truncated if the buffer is not large enough to hold
- * the full path. However, the truncated result will always be
+ * will remove double separators, and unlike cpj_path_get_absolute_test it
+ * permits the use of two relative paths to combine. The result will be written
+ * to a buffer, which might be truncated if the buffer is not large enough to
+ * hold the full path. However, the truncated result will always be
  * null-terminated. The returned value is the amount of characters which the
  * resulting path would take if it was not truncated (excluding the
  * null-terminating character).
@@ -144,7 +167,7 @@ CPJ_PUBLIC cpj_size_t cpj_path_get_relative(
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the full, combined path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_join(
+CPJ_PUBLIC cpj_size_t cpj_path_join_test(
   cpj_path_style_t path_style, const cpj_char_t *path_a,
   const cpj_char_t *path_b, cpj_char_t *buffer, cpj_size_t buffer_size
 );
@@ -153,8 +176,8 @@ CPJ_PUBLIC cpj_size_t cpj_path_join(
  * @brief Joins multiple paths together.
  *
  * This function generates a new path by joining multiple paths together. It
- * will remove double separators, and unlike cpj_path_get_absolute it permits
- * the use of multiple relative paths to combine. The last path of the
+ * will remove double separators, and unlike cpj_path_get_absolute_test it
+ * permits the use of multiple relative paths to combine. The last path of the
  * submitted string array must be set to NULL. The result will be written to a
  * buffer, which might be truncated if the buffer is not large enough to hold
  * the full path. However, the truncated result will always be
@@ -169,7 +192,7 @@ CPJ_PUBLIC cpj_size_t cpj_path_join(
  * @param buffer_size The size of the result buffer.
  * @return Returns the total amount of characters of the full, combined path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_join_multiple(
+CPJ_PUBLIC cpj_size_t cpj_path_join_multiple_test(
   cpj_path_style_t path_style, const cpj_char_t **paths, cpj_char_t *buffer,
   cpj_size_t buffer_size
 );
@@ -208,7 +231,7 @@ cpj_path_get_root(cpj_path_style_t path_style, const cpj_char_t *path);
  * written to.
  * @return Returns the total amount of characters of the new path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_change_root(
+CPJ_PUBLIC cpj_size_t cpj_path_change_root_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t *new_root, cpj_char_t *buffer, cpj_size_t buffer_size
 );
@@ -258,7 +281,7 @@ cpj_path_is_relative(cpj_path_style_t path_style, const cpj_char_t *path);
  * @param length The output of the length of the basename. This may be
  * null if not required.
  */
-CPJ_PUBLIC void cpj_path_get_basename(
+CPJ_PUBLIC void cpj_path_get_basename_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t **basename, cpj_size_t *length
 );
@@ -283,7 +306,7 @@ CPJ_PUBLIC void cpj_path_get_basename(
  * @return Returns the size which the complete new path would have if it was
  * not truncated.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_change_basename(
+CPJ_PUBLIC cpj_size_t cpj_path_change_basename_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t *new_basename, cpj_char_t *buffer, cpj_size_t buffer_size
 );
@@ -301,7 +324,7 @@ CPJ_PUBLIC cpj_size_t cpj_path_change_basename(
  * @param path The path which will be inspected.
  * @param length The length of the dirname.
  */
-CPJ_PUBLIC void cpj_path_get_dirname(
+CPJ_PUBLIC void cpj_path_get_dirname_test(
   cpj_path_style_t path_style, const cpj_char_t *path, cpj_size_t *length
 );
 
@@ -322,7 +345,7 @@ CPJ_PUBLIC void cpj_path_get_dirname(
  * @param length The output of the length of the extension.
  * @return Returns true if an extension is found or false otherwise.
  */
-CPJ_PUBLIC bool cpj_path_get_extension(
+CPJ_PUBLIC bool cpj_path_get_extension_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t **extension, cpj_size_t *length
 );
@@ -338,8 +361,9 @@ CPJ_PUBLIC bool cpj_path_get_extension(
  * @param path The path which will be inspected.
  * @return Returns true if the path has an extension or false otherwise.
  */
-CPJ_PUBLIC bool
-cpj_path_has_extension(cpj_path_style_t path_style, const cpj_char_t *path);
+CPJ_PUBLIC bool cpj_path_has_extension_test(
+  cpj_path_style_t path_style, const cpj_char_t *path
+);
 
 /**
  * @brief Changes the extension of a file path.
@@ -364,7 +388,7 @@ cpj_path_has_extension(cpj_path_style_t path_style, const cpj_char_t *path);
  * @return Returns the total size which the output would have if it was not
  * truncated.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_change_extension(
+CPJ_PUBLIC cpj_size_t cpj_path_change_extension_test(
   cpj_path_style_t path_style, const cpj_char_t *path,
   const cpj_char_t *new_extension, cpj_char_t *buffer, cpj_size_t buffer_size
 );
@@ -394,7 +418,7 @@ CPJ_PUBLIC cpj_size_t cpj_path_change_extension(
  * @return The size which the complete normalized path has if it was not
  * truncated.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_normalize(
+CPJ_PUBLIC cpj_size_t cpj_path_normalize_test(
   cpj_path_style_t path_style, const cpj_char_t *path, cpj_char_t *buffer,
   cpj_size_t buffer_size
 );
@@ -412,7 +436,7 @@ CPJ_PUBLIC cpj_size_t cpj_path_normalize(
  * @param path_other The other path which will compared with the base path.
  * @return Returns the number of characters which are common in the base path.
  */
-CPJ_PUBLIC cpj_size_t cpj_path_get_intersection(
+CPJ_PUBLIC cpj_size_t cpj_path_get_intersection_test(
   cpj_path_style_t path_style, const cpj_char_t *path_base,
   const cpj_char_t *path_other
 );
@@ -552,7 +576,7 @@ cpj_path_is_separator(cpj_path_style_t path_style, const cpj_char_t *str);
  * @param path The path which will be inspected.
  * @return Returns the style which is most likely used for the path.
  */
-CPJ_PUBLIC cpj_path_style_t cpj_path_guess_style(const cpj_char_t *path);
+CPJ_PUBLIC cpj_path_style_t cpj_path_guess_style_test(const cpj_char_t *path);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -1,4 +1,4 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +9,7 @@ int root_change_without_root(void)
   cpj_size_t length;
   cpj_char_t buffer[FILENAME_MAX] = "hello\\world.txt";
 
-  length = cpj_path_change_root(CPJ_STYLE_WINDOWS, buffer, "D:\\", buffer,
+  length = cpj_path_change_root_test(CPJ_STYLE_WINDOWS, buffer, "D:\\", buffer,
     sizeof(buffer));
 
   if (length != 18) {
@@ -28,7 +28,7 @@ int root_change_overlapping(void)
   cpj_size_t length;
   cpj_char_t buffer[FILENAME_MAX] = "C:\\hello\\world.txt";
 
-  length = cpj_path_change_root(CPJ_STYLE_WINDOWS, buffer, "D:\\path\\", buffer,
+  length = cpj_path_change_root_test(CPJ_STYLE_WINDOWS, buffer, "D:\\path\\", buffer,
     sizeof(buffer));
 
   if (length != 23) {
@@ -47,7 +47,7 @@ int root_change_separators(void)
   cpj_size_t length;
   cpj_char_t buffer[FILENAME_MAX];
 
-  length = cpj_path_change_root(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "D:\\path\\", buffer,
+  length = cpj_path_change_root_test(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "D:\\path\\", buffer,
     sizeof(buffer));
 
   if (length != 23) {
@@ -66,7 +66,7 @@ int root_change_empty(void)
   cpj_size_t length;
   cpj_char_t buffer[FILENAME_MAX];
 
-  length = cpj_path_change_root(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "", buffer,
+  length = cpj_path_change_root_test(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "", buffer,
     sizeof(buffer));
 
   if (length != 15) {
@@ -85,7 +85,7 @@ int root_change_simple(void)
   cpj_size_t length;
   cpj_char_t buffer[FILENAME_MAX];
 
-  length = cpj_path_change_root(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "D:\\", buffer,
+  length = cpj_path_change_root_test(CPJ_STYLE_WINDOWS, "C:\\hello\\world.txt", "D:\\", buffer,
     sizeof(buffer));
 
   if (length != 18) {

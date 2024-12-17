@@ -1,4 +1,4 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <stdlib.h>
 
 int is_absolute_relative_windows(void)

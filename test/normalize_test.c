@@ -1,4 +1,4 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <limits.h>
 #include <memory.h>
 #include <stdint.h>
@@ -15,7 +15,7 @@ int normalize_forward_slashes(void)
   input = "C:/this/is/a/test/path";
   strcpy(result, input);
   expected = "C:\\this\\is\\a\\test\\path";
-  count = cpj_path_normalize(CPJ_STYLE_WINDOWS, result, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -32,7 +32,7 @@ int normalize_back_after_root(void)
   input = "C:\\..\\this\\is\\a\\test\\path";
   strcpy(result, input);
   expected = "C:\\this\\is\\a\\test\\path";
-  count = cpj_path_normalize(CPJ_STYLE_WINDOWS, result, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -49,7 +49,7 @@ int normalize_only_separators(void)
   input = "////";
   strcpy(result, input);
   expected = "/";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, result, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -66,7 +66,7 @@ int normalize_empty(void)
   input = "test/..";
   strcpy(result, input);
   expected = ".";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, result, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -83,7 +83,7 @@ int normalize_overlap(void)
   input = "/var/./logs/.//test/..//..//////";
   strcpy(result, input);
   expected = "/var";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, result, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, result, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -99,7 +99,7 @@ int normalize_mixed(void)
 
   input = "/var/./logs/.//test/..//..//////";
   expected = "/var";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -115,7 +115,7 @@ int normalize_remove_current(void)
 
   input = "/var/././././";
   expected = "/var";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -131,7 +131,7 @@ int normalize_double_separator(void)
 
   input = "/var////logs//test/";
   expected = "/var/logs/test";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -153,7 +153,7 @@ int normalize_terminated(void)
   memset(result, 1, sizeof(result));
 
   for (i = 0; i < 7; ++i) {
-    count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, i);
+    count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, i);
 
     if (i != 0 && expected_size < i) {
       n = expected_size;
@@ -174,11 +174,34 @@ int normalize_relative_too_far(void)
 {
   cpj_size_t count;
   cpj_char_t result[FILENAME_MAX];
-  cpj_char_t *input, *expected;
+  cpj_char_t *expected;
 
-  input = "rel/../../";
   expected = "..";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, CPJ_ZSTR_LITERAL("rel/../../"), result, sizeof(result));
+  if (count != strlen(expected) || strcmp(result, expected) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  expected = "C:..\\..";
+  count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, CPJ_ZSTR_LITERAL("C:rel/../../../"), result, sizeof(result));
+  if (count != strlen(expected) || strcmp(result, expected) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  expected = "C:";
+  count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, CPJ_ZSTR_LITERAL("C:rel/../"), result, sizeof(result));
+  if (count != strlen(expected) || strcmp(result, expected) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  expected = "C:";
+  count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, CPJ_ZSTR_LITERAL("C:"), result, sizeof(result));
+  if (count != strlen(expected) || strcmp(result, expected) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  expected = "C:\\";
+  count = cpj_path_normalize_test(CPJ_STYLE_WINDOWS, CPJ_ZSTR_LITERAL("C:/"), result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -194,7 +217,7 @@ int normalize_absolute_too_far(void)
 
   input = "/var/logs/test/../../../../../../";
   expected = "/";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -210,7 +233,7 @@ int normalize_navigate_back(void)
 
   input = "/var/logs/test/../../";
   expected = "/var";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }
@@ -226,7 +249,7 @@ int normalize_do_nothing(void)
 
   input = "/var";
   expected = "/var";
-  count = cpj_path_normalize(CPJ_STYLE_UNIX, input, result, sizeof(result));
+  count = cpj_path_normalize_test(CPJ_STYLE_UNIX, input, result, sizeof(result));
   if (count != strlen(expected) || strcmp(result, expected) != 0) {
     return EXIT_FAILURE;
   }

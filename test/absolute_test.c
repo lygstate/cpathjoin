@@ -1,4 +1,4 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +34,7 @@ int absolute_too_far(void)
   cpj_char_t buffer[FILENAME_MAX];
   cpj_size_t length;
 
-  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "../../../../../", buffer,
+  length = cpj_path_get_absolute_test(CPJ_STYLE_UNIX, "/hello/there", "../../../../../", buffer,
     sizeof(buffer));
 
   if (length != 1) {
@@ -45,7 +45,7 @@ int absolute_too_far(void)
     return EXIT_FAILURE;
   }
 
-  length = cpj_path_get_absolute(CPJ_STYLE_WINDOWS, "C:/hello/there", "../../../../../", buffer,
+  length = cpj_path_get_absolute_test(CPJ_STYLE_WINDOWS, "C:/hello/there", "../../../../../", buffer,
     sizeof(buffer));
 
   if (length != 3) {
@@ -64,7 +64,7 @@ int absolute_normalization(void)
   cpj_char_t buffer[FILENAME_MAX];
   cpj_size_t length;
 
-  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello//../there", "test//thing", buffer,
+  length = cpj_path_get_absolute_test(CPJ_STYLE_UNIX, "/hello//../there", "test//thing", buffer,
     sizeof(buffer));
 
   if (length != 17) {
@@ -83,7 +83,7 @@ int absolute_mixed(void)
   cpj_char_t buffer[FILENAME_MAX];
   cpj_size_t length;
 
-  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "hello/there", "/test", buffer,
+  length = cpj_path_get_absolute_test(CPJ_STYLE_UNIX, "hello/there", "/test", buffer,
     sizeof(buffer));
 
   if (length != 5) {
@@ -102,7 +102,7 @@ int absolute_unix_relative_base(void)
   cpj_char_t buffer[FILENAME_MAX];
   cpj_size_t length;
 
-  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "hello/there", "test", buffer, sizeof(buffer));
+  length = cpj_path_get_absolute_test(CPJ_STYLE_UNIX, "hello/there", "test", buffer, sizeof(buffer));
 
   if (length != 17) {
     return EXIT_FAILURE;
@@ -120,7 +120,7 @@ int absolute_windows_relative_base(void)
   cpj_char_t buffer[FILENAME_MAX];
   cpj_size_t length;
 
-  length = cpj_path_get_absolute(CPJ_STYLE_WINDOWS, "hello\\there", "test", buffer, sizeof(buffer));
+  length = cpj_path_get_absolute_test(CPJ_STYLE_WINDOWS, "hello\\there", "test", buffer, sizeof(buffer));
 
   if (length != 17) {
     return EXIT_FAILURE;
@@ -138,7 +138,7 @@ int absolute_absolute_path(void)
   cpj_char_t buffer[FILENAME_MAX];
   cpj_size_t length;
 
-  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "/test", buffer,
+  length = cpj_path_get_absolute_test(CPJ_STYLE_UNIX, "/hello/there", "/test", buffer,
     sizeof(buffer));
 
   if (length != 5) {
@@ -157,7 +157,7 @@ int absolute_simple(void)
   cpj_char_t buffer[FILENAME_MAX];
   cpj_size_t length;
 
-  length = cpj_path_get_absolute(CPJ_STYLE_UNIX, "/hello/there", "..", buffer, sizeof(buffer));
+  length = cpj_path_get_absolute_test(CPJ_STYLE_UNIX, "/hello/there", "..", buffer, sizeof(buffer));
 
   if (length != 6) {
     return EXIT_FAILURE;
@@ -178,26 +178,26 @@ int absolute_buffer_reuse(void)
   memset(path, 1, FILENAME_MAX);
   path[0] = '\0';
 
-  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "/", path, FILENAME_MAX);
+  cpj_path_get_absolute_test(CPJ_STYLE_UNIX, path, "/", path, FILENAME_MAX);
   if (strcmp(path, "/") != 0) {
     return EXIT_FAILURE;
   }
-  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "see", path, FILENAME_MAX);
+  cpj_path_get_absolute_test(CPJ_STYLE_UNIX, path, "see", path, FILENAME_MAX);
   if (strcmp(path, "/see") != 0) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "dog", path, FILENAME_MAX);
+  cpj_path_get_absolute_test(CPJ_STYLE_UNIX, path, "dog", path, FILENAME_MAX);
   if (strcmp(path, "/see/dog") != 0) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "..", path, FILENAME_MAX);
+  cpj_path_get_absolute_test(CPJ_STYLE_UNIX, path, "..", path, FILENAME_MAX);
   if (strcmp(path, "/see") != 0) {
     return EXIT_FAILURE;
   }
 
-  cpj_path_get_absolute(CPJ_STYLE_UNIX, path, "cat", path, FILENAME_MAX);
+  cpj_path_get_absolute_test(CPJ_STYLE_UNIX, path, "cat", path, FILENAME_MAX);
   if (strcmp(path, "/see/cat") != 0) {
     return EXIT_FAILURE;
   }

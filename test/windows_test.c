@@ -1,4 +1,4 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,7 +27,7 @@ int windows_root_backslash(void)
 
 int windows_intersection_case(void)
 {
-  if (cpj_path_get_intersection(CPJ_STYLE_WINDOWS, "C:\\MYFOLDER\\MYILE.TXT",
+  if (cpj_path_get_intersection_test(CPJ_STYLE_WINDOWS, "C:\\MYFOLDER\\MYILE.TXT",
         "c:\\myfolder\\myile.txt") != 21) {
     return EXIT_FAILURE;
   }

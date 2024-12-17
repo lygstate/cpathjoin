@@ -1,4 +1,4 @@
-#include <cpj.h>
+#include "cpj_test.h"
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +9,7 @@ int basename_change_trim_only_root(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename(CPJ_STYLE_UNIX, "/", "///another.txt///", buffer,
+  n = cpj_path_change_basename_test(CPJ_STYLE_UNIX, "/", "///another.txt///", buffer,
     sizeof(buffer));
   if (n != 12) {
     return EXIT_FAILURE;
@@ -27,7 +27,7 @@ int basename_change_trim(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename(CPJ_STYLE_UNIX, "/test.txt", "///another.txt///", buffer,
+  n = cpj_path_change_basename_test(CPJ_STYLE_UNIX, "/test.txt", "///another.txt///", buffer,
     sizeof(buffer));
   if (n != 12) {
     return EXIT_FAILURE;
@@ -45,7 +45,7 @@ int basename_change_relative(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "../test.txt", "another.txt", buffer,
+  n = cpj_path_change_basename_test(CPJ_STYLE_WINDOWS, "../test.txt", "another.txt", buffer,
     sizeof(buffer));
   if (n != 14) {
     return EXIT_FAILURE;
@@ -63,7 +63,7 @@ int basename_change_empty_basename(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "C:\\test.txt", "", buffer, sizeof(buffer));
+  n = cpj_path_change_basename_test(CPJ_STYLE_WINDOWS, "C:\\test.txt", "", buffer, sizeof(buffer));
   if (n != 3) {
     return EXIT_FAILURE;
   }
@@ -80,7 +80,7 @@ int basename_change_only_root(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "C:\\", "another.txt", buffer, sizeof(buffer));
+  n = cpj_path_change_basename_test(CPJ_STYLE_WINDOWS, "C:\\", "another.txt", buffer, sizeof(buffer));
   if (n != 14) {
     return EXIT_FAILURE;
   }
@@ -97,7 +97,7 @@ int basename_change_empty_path(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "", "another.txt", buffer, sizeof(buffer));
+  n = cpj_path_change_basename_test(CPJ_STYLE_WINDOWS, "", "another.txt", buffer, sizeof(buffer));
   if (n != 11) {
     return EXIT_FAILURE;
   }
@@ -114,7 +114,7 @@ int basename_change_simple(void)
   cpj_size_t n;
   cpj_char_t buffer[FILENAME_MAX];
 
-  n = cpj_path_change_basename(CPJ_STYLE_WINDOWS, "C:\\test.txt", "another.txt", buffer,
+  n = cpj_path_change_basename_test(CPJ_STYLE_WINDOWS, "C:\\test.txt", "another.txt", buffer,
     sizeof(buffer));
   if (n != 14) {
     return EXIT_FAILURE;
@@ -133,7 +133,7 @@ int basename_windows(void)
   cpj_size_t length;
 
   path = "C:\\path\\test.txt";
-  cpj_path_get_basename(CPJ_STYLE_WINDOWS, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_WINDOWS, path, &basename, &length);
 
   if (length != 8) {
     return EXIT_FAILURE;
@@ -152,7 +152,7 @@ int basename_root(void)
   cpj_size_t length;
 
   path = "/";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 0) {
     return EXIT_FAILURE;
@@ -171,7 +171,7 @@ int basename_special_directories(void)
   cpj_size_t length;
 
   path = "..";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 2) {
     return EXIT_FAILURE;
@@ -182,7 +182,7 @@ int basename_special_directories(void)
   }
 
   path = ".";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 1) {
     return EXIT_FAILURE;
@@ -201,7 +201,7 @@ int basename_no_separators(void)
   cpj_size_t length;
 
   path = "file_name";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 9) {
     return EXIT_FAILURE;
@@ -220,7 +220,7 @@ int basename_trailing_separators(void)
   cpj_size_t length;
 
   path = "/my/path.txt////";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 8) {
     return EXIT_FAILURE;
@@ -239,7 +239,7 @@ int basename_trailing_separator(void)
   cpj_size_t length;
 
   path = "/my/path.txt/";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 8) {
     return EXIT_FAILURE;
@@ -258,7 +258,7 @@ int basename_empty(void)
   cpj_size_t length;
 
   path = "";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 0) {
     return EXIT_FAILURE;
@@ -277,7 +277,7 @@ int basename_simple(void)
   cpj_size_t length;
 
   path = "/my/path.txt";
-  cpj_path_get_basename(CPJ_STYLE_UNIX, path, &basename, &length);
+  cpj_path_get_basename_test(CPJ_STYLE_UNIX, path, &basename, &length);
 
   if (length != 8) {
     return EXIT_FAILURE;
