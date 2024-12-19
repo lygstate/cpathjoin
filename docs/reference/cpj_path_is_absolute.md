@@ -3,19 +3,23 @@ title: cpj_path_is_absolute
 description: Determine whether the path is absolute or not.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Determine whether the path is absolute or not.
 
 ## Description
+
 ```c
 bool cpj_path_is_absolute(const char *path);
 ```
+
 This function checks whether the path is an absolute (fully qualified) path or not. A path is considered to be absolute if the root ends with a separator.
 
 ## Parameters
- * **path**: The path which will be checked.
+
+* **path**: The path which will be checked.
 
 ## Return Value
+
 Returns ``true`` if the path is absolute or ``false`` otherwise.
 
 ## Outcomes
@@ -36,6 +40,7 @@ Returns ``true`` if the path is absolute or ``false`` otherwise.
 | WINDOWS | ``..\hello\world.txt``   | ``false`` |
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -55,7 +60,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The root is absolute.
 ```
 

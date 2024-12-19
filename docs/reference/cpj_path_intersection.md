@@ -3,22 +3,26 @@ title: cpj_path_get_intersection
 description: Finds common portions in two paths.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Finds common portions in two paths.
 
 ## Signature
+
 ```c
 size_t cpj_path_get_intersection(const char *path_base, const char *path_other);
 ```
 
 ## Description
+
 This function finds common portions in two paths and returns the number characters from the beginning of the base path which are equal to the other path.
 
 ## Parameters
- * **path_base**: The base path which will be compared with the other path.
- * **path_other**: The other path which will compared with the base path.
+
+* **path_base**: The base path which will be compared with the other path.
+* **path_other**: The other path which will compared with the base path.
 
 ## Return Value
+
 Returns the number of characters which are common in the base path.
 
 ## Outcomes
@@ -27,17 +31,18 @@ Returns the number of characters which are common in the base path.
 |-------------|--------------------------|--------------------------|--------|----------------------|
 | ``UNIX``    | ``/test/abc/../foo/bar`` | ``/test/foo/har``        | 16     | ``/test/abc/../foo`` |
 | ``UNIX``    | ``/test/foo/har``        | ``/test/abc/../foo/bar`` | 9      | ``/test/foo``        |
-| ``UNIX``    | ``/test/abc.txt``        | ``test/abc.txt``         | 0      | `` ``                |
-| ``UNIX``    | ``/``                    | `` ``                    | 0      | `` ``                |
+| ``UNIX``    | ``/test/abc.txt``        | ``test/abc.txt``         | 0      | ````                |
+| ``UNIX``    | ``/``                    | ````                    | 0      | ````                |
 | ``UNIX``    | ``/this///is/a//test``   | ``/this//is/a///file``   | 12     | ``/this///is/a``     |
 | ``UNIX``    | ``/this/is/a/test``      | ``/this/is/a/``          | 10     | ``/this/is/a``       |
 | ``UNIX``    | ``/this/is/a/test``      | ``/this/is/a``           | 10     | ``/this/is/a``       |
 | ``UNIX``    | ``/this/is/a/test``      | ``/this/is/a/string``    | 10     | ``/this/is/a``       |
 | ``WINDOWS`` | ``C:/abc/test.txt``      | ``C:/``                  | 3      | ``C:/``              |
 | ``WINDOWS`` | ``C:/abc/test.txt``      | ``C:/def/test.txt``      | 3      | ``C:/``              |
-| ``WINDOWS`` | ``C:/test/abc.txt``      | ``D:/test/abc.txt``      | 0      | `` ``                |
+| ``WINDOWS`` | ``C:/test/abc.txt``      | ``D:/test/abc.txt``      | 0      | ````                |
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -58,7 +63,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The common portion is: '/this/is/a'
 ```
 

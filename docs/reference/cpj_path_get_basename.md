@@ -3,10 +3,11 @@ title: cpj_path_get_basename
 description: Gets the basename of a file path.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Gets the basename of a file path.
 
 ## Description
+
 ```c
 void cpj_path_get_basename(const char *path, const char **basename,
   size_t *length);
@@ -15,9 +16,10 @@ void cpj_path_get_basename(const char *path, const char **basename,
 This function gets the basename of a file path. The basename is the last segment of a path. For instance, ``logs`` is the basename of the path ``/var/logs``. A pointer to the beginning of the basename will be returned through the basename parameter. This pointer will be positioned on the first letter after the separator. The length of the file path will be returned through the length parameter. The length will be set to zero and the basename to NULL if there is no basename available.
 
 ## Parameters
- * **path**: The path which will be inspected.
- * **basename**: The output of the basename pointer.
- * **length**: The output of the length of the basename.
+
+* **path**: The path which will be inspected.
+* **basename**: The output of the basename pointer.
+* **length**: The output of the length of the basename.
 
 ## Outcomes
 
@@ -29,10 +31,11 @@ This function gets the basename of a file path. The basename is the last segment
 | ``file_name``        | ``file_name`` |
 | ``..``               | ``..``        |
 | ``.``                | ``.``         |
-| ``/``                | `` ``         |
+| ``/``                | ````         |
 | ``C:\path\test.txt`` | ``test.txt``  |
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -50,8 +53,10 @@ int main(int argc, char *argv[])
   return EXIT_SUCCESS;
 }
 ```
+
 Ouput:
-```
+
+```txt
 The basename is: 'path.txt'
 ```
 

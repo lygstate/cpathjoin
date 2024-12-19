@@ -3,10 +3,11 @@ title: cpj_path_is_relative
 description: Determine whether the path is relative or not.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Determine whether the path is relative or not.
 
 ## Description
+
 ```c
 bool cpj_path_is_relative(const char *path);
 ```
@@ -14,9 +15,11 @@ bool cpj_path_is_relative(const char *path);
 This function checks whether the path is a relative path or not. A path is considered to be relative if the root does not end with a separator.
 
 ## Parameters
- * **path**: The path which will be checked.
+
+* **path**: The path which will be checked.
 
 ## Return Value
+
 Returns ``true`` if the path is relative or ``false`` otherwise.
 
 ## Outcomes
@@ -37,6 +40,7 @@ Returns ``true`` if the path is relative or ``false`` otherwise.
 | WINDOWS | ``..\hello\world.txt``   | ``true``  |
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -56,7 +60,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The root is relative.
 ```
 

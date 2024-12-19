@@ -3,10 +3,11 @@ title: cpj_path_change_segment
 description: Changes the content of a segment.
 ---
 
-_(since v1.2.0)_  
+_(since v1.2.0)_
 Changes the content of a segment.
 
 ## Description
+
 ```c
 size_t cpj_path_change_segment(struct cpj_segment *segment, const char *value,
   char *buffer, size_t buffer_size);
@@ -19,22 +20,25 @@ original length. The output is truncated if the new path is larger than the
 submitted buffer size, but it is always null-terminated. The source of the
 segment and the submitted buffer may be the same.
 
-**Note:** This function does not normalize the resulting path. You can use 
+**Note:** This function does not normalize the resulting path. You can use
 **[cpj_path_normalize]({{ site.baseurl }}{% link reference/cpj_path_normalize.md %})**
-to do so. Separators before and after the value will be trimmed. The value may 
+to do so. Separators before and after the value will be trimmed. The value may
 contain separators which will introduce new segments.
 
 ## Parameters
- * **segment**: The segment which will be modifier.
- * **value**: The new content of the segment.
- * **buffer**: The buffer where the modified path will be written to.
- * **buffer_size**: The size of the output buffer.
+
+* **segment**: The segment which will be modifier.
+* **value**: The new content of the segment.
+* **buffer**: The buffer where the modified path will be written to.
+* **buffer_size**: The size of the output buffer.
 
 ## Return Value
-Returns the total size which would have been written if the output was not 
+
+Returns the total size which would have been written if the output was not
 truncated.
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -61,7 +65,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The new path: '/other/cool/path/'
 ```
 

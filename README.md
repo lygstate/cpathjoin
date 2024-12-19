@@ -1,9 +1,9 @@
+# libcpj - path join library for C/C++
+
 [![Build Pipeline](https://github.com/lygstate/cpathjoin/actions/workflows/build-linux.yml/badge.svg)](https://github.com/lygstate/cpathjoin/actions/workflows/build-linux.yml)
 [![Build Pipeline](https://github.com/lygstate/cpathjoin/actions/workflows/build-freebsd.yml/badge.svg)](https://github.com/lygstate/cpathjoin/actions/workflows/build-freebsd.yml)
 [![Build Pipeline](https://github.com/lygstate/cpathjoin/actions/workflows/build-macos.yml/badge.svg)](https://github.com/lygstate/cpathjoin/actions/workflows/build-macos.yml)
 [![Build Pipeline](https://github.com/lygstate/cpathjoin/actions/workflows/build-win.yml/badge.svg)](https://github.com/lygstate/cpathjoin/actions/workflows/build-win.yml)
-
-# libcpj - path join library for C/C++
 
 This is a lighweight C path manipulation library. It is currently compiled and
 tested under **Linux**, **FreeBSD**, **Windows** and **MacOS**. It supports UNIX and Windows

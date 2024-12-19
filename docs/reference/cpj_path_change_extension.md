@@ -3,10 +3,11 @@ title: cpj_path_change_extension
 description: Changes the extension of a file path.
 ---
 
-_(since v1.2.0)_  
+_(since v1.2.0)_
 Changes the extension of a file path.
 
 ## Description
+
 ```c
 size_t cpj_path_change_extension(const char *path, const char *new_extension,
   char *buffer, size_t buffer_size);
@@ -21,7 +22,7 @@ The function returns the total number of characters the complete buffer would
 have, even if it was not written out completely. The path may be the same
 memory address as the buffer.
 
-**Note:** This function does not normalize the resulting path. You can use 
+**Note:** This function does not normalize the resulting path. You can use
 **[cpj_path_normalize]({{ site.baseurl }}{% link reference/cpj_path_normalize.md %})**
 to do so.
 
@@ -29,15 +30,18 @@ to do so.
 be ignored when the new extension is appended.
 
 ## Parameters
- * **path**: The path which will be used to make the change.
- * **new_extension**: The extension which will be placed within the new path.
- * **buffer**: The output buffer where the result will be written to.
- * **buffer_size**: The size of the output buffer where the result will be written to.
+
+* **path**: The path which will be used to make the change.
+* **new_extension**: The extension which will be placed within the new path.
+* **buffer**: The output buffer where the result will be written to.
+* **buffer_size**: The size of the output buffer where the result will be written to.
 
 ## Return Value
+
 Returns the total size which the output would have if it was not truncated.
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -58,7 +62,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The new path: 'C:\test.md'
 ```
 

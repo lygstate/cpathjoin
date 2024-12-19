@@ -7,6 +7,7 @@ _(since v1.0.0)_
 Joins two paths together.
 
 ## Description
+
 ```c
 size_t cpj_path_join(const char *path_a, const char *path_b, char *buffer,
   size_t buffer_size);
@@ -15,12 +16,14 @@ size_t cpj_path_join(const char *path_a, const char *path_b, char *buffer,
 This function generates a new path by combining the two submitted paths. It will remove double separators, and unlike [cpj_path_get_absolute]({{ site.baseurl }}{% link reference/cpj_path_get_absolute.md %}) it permits the use of two relative paths to combine. The result will be written to a buffer, which might be truncated if the buffer is not large enough to hold the full path. However, the truncated result will always be null-terminated. The returned value is the amount of characters which the resulting path would take if it was not truncated (excluding the null-terminating character).
 
 ## Parameters
- * **path_a**: The first path which comes first.
- * **path_b**: The second path which comes after the first.
- * **buffer**: The buffer where the result will be written to.
- * **buffer_size**: The size of the result buffer.
+
+* **path_a**: The first path which comes first.
+* **path_b**: The second path which comes after the first.
+* **buffer**: The buffer where the result will be written to.
+* **buffer_size**: The size of the result buffer.
 
 ## Return Value
+
 Returns the total amount of characters of the full, combined path.
 
 ## Outcomes
@@ -38,16 +41,19 @@ Returns the total amount of characters of the full, combined path.
 | WINDOWS | ``\\s1\unc\path``     | ``\\s2\unc\pa``         | ``\\s1\unc\pa\s2\unc\path``            |
 
 ### Style
+
 The style is automatically chosen during compile time, which is
 UNIX for macOS and linux and WINDOWS for windows. You can change the style
 using [cpj_path_set_style]({{ site.baseurl }}{% link reference/cpj_path_set_style.md %}).
 
 ### Result
+
 The **path_b** parameter will always be treated as a relative path, so even if
 a driver letter is submitted on a windows style path, it will be treated as a
 folder.
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -66,7 +72,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The combined path is: hello/world
 ```
 

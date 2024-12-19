@@ -3,25 +3,30 @@ title: cpj_path_get_first_segment
 description: Gets the first segment of a path.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Gets the first segment of a path.
 
 ## Description
+
 ```c
 bool cpj_path_get_first_segment(const char *path, struct cpj_segment *segment);
 ```
 
 ## Description
+
 This function finds the first segment of a path. The position of the segment is set to the first character after the separator, and the length counts all characters until the next separator (excluding the separator).
 
 ## Parameters
- * **path**: The path which will be inspected.
- * **segment**: The segment which will be extracted.
+
+* **path**: The path which will be inspected.
+* **segment**: The segment which will be extracted.
 
 ## Return Value
+
 Returns ``true`` if there is a segment or ``false`` if there is none.
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -44,7 +49,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 Segment length is '2'.
 The segment is 'my'.
 ```

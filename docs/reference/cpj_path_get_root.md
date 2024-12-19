@@ -3,27 +3,30 @@ title: cpj_path_get_root
 description: Determines the root of a path.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Determines the root of a path.
 
 ## Description
+
 ```c
 void cpj_path_get_root(const char *path, size_t *length);
 ```
+
 This function determines the root of a path by finding it's length.  The root comes before the first segment of the path. For example, ``C:\`` is the root of ``C:\folder\file.txt``. It always starts at the submitted path. If the path has no root, the length will be set to zero.
 
 ## Parameters
- * **path**: The path which will be inspected.
- * **length**: The output of the root length.
+
+* **path**: The path which will be inspected.
+* **length**: The output of the root length.
 
 ## Outcomes
 
 | Style   | Path                     | Root                 |
 |---------|--------------------------|----------------------|
 | UNIX    | ``/test/``               | ``/``                |
-| UNIX    | ``test.txt``             | `` ``                |
-| UNIX    | ``C:\test.txt``          | `` ``                |
-| UNIX    | ``\folder\``             | `` ``                |
+| UNIX    | ``test.txt``             | ````                |
+| UNIX    | ``C:\test.txt``          | ````                |
+| UNIX    | ``\folder\``             | ````                |
 | WINDOWS | ``/test.txt``            | ``/``                |
 | WINDOWS | ``\test.txt``            | ``\``                |
 | WINDOWS | ``C:\test.txt``          | ``C:\``              |
@@ -31,14 +34,16 @@ This function determines the root of a path by finding it's length.  The root co
 | WINDOWS | ``\\.\folder\data``      | ``\\.\``             |
 | WINDOWS | ``\\?\folder\data``      | ``\\?\``             |
 | WINDOWS | ``C:test.txt``           | ``C:``               |
-| WINDOWS | ``..\hello\world.txt``   | `` ``                |
+| WINDOWS | ``..\hello\world.txt``   | ````                |
 
 ### Note
-The style is automatically chosen during compile time, which is 
+
+The style is automatically chosen during compile time, which is
 UNIX for macOS and linux and WINDOWS for windows. You can change the style
 using [cpj_path_set_style]({{ site.baseurl }}{% link reference/cpj_path_set_style.md %}).
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -59,7 +64,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The root is: '/'
 ```
 

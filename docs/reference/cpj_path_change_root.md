@@ -3,10 +3,11 @@ title: cpj_path_change_root
 description: Changes the root of a path.
 ---
 
-_(since v1.2.0)_  
+_(since v1.2.0)_
 Changes the root of a path.
 
 ## Description
+
 ```c
 size_t cpj_path_change_root(const char *path, const char *new_root,
   char *buffer, size_t buffer_size);
@@ -19,23 +20,26 @@ result will always be null-terminated. The returned value is the amount of
 characters which the resulting path would take if it was not truncated
 (excluding the null-terminating character).
 
-**Note:** This function does not normalize the resulting path. You can use 
+**Note:** This function does not normalize the resulting path. You can use
 **[cpj_path_normalize]({{ site.baseurl }}{% link reference/cpj_path_normalize.md %})**
-to do so. The new root may contain separators which will introduce new segments. 
-If the submitted path does not have any root, the new root will be prepended to 
+to do so. The new root may contain separators which will introduce new segments.
+If the submitted path does not have any root, the new root will be prepended to
 the path.
 
 ## Parameters
- * **path**: The original path which will get a new root.
- * **new_root**: The new root which will be placed in the path.
- * **buffer**: The output buffer where the result is written to.
- * **buffer_size**: The size of the output buffer where the result is written 
+
+* **path**: The original path which will get a new root.
+* **new_root**: The new root which will be placed in the path.
+* **buffer**: The output buffer where the result is written to.
+* **buffer_size**: The size of the output buffer where the result is written
  to.
 
 ## Return Value
+
 Returns the total amount of characters of the new path.
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -56,7 +60,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The new path: 'D:\another.txt'
 ```
 

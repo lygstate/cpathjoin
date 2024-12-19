@@ -3,10 +3,11 @@ title: cpj_path_get_extension
 description: Gets the extension of a file path.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Gets the extension of a file path.
 
 ## Description
+
 ```c
 bool cpj_path_get_extension(const char *path, const char **extension, size_t *length);
 ```
@@ -14,21 +15,23 @@ bool cpj_path_get_extension(const char *path, const char **extension, size_t *le
 This function extracts the extension portion of a file path. A pointer to the beginning of the extension will be returned through the extension parameter if an extension is found and true is returned. This pointer will be positioned on the dot. The length of the extension name will be returned through the length parameter. If no extension is found both parameters won't be touched and false will be returned.
 
 ## Parameters
- * **path**: The path which will be inspected.
- * **extension**: The output of the extension pointer.
- * **length**: The output of the length of the extension.
+
+* **path**: The path which will be inspected.
+* **extension**: The output of the extension pointer.
+* **length**: The output of the length of the extension.
 
 ## Outcomes
 
 | Path                       | Result     |
 |----------------------------|------------|
 | ``/my/path.txt``           | ``.txt``   |
-| ``/my/path``               | `` ``      |
+| ``/my/path``               | ````      |
 | ``/my/.path``              | ``.path``  |
 | ``/my/path.``              | ``.``      |
 | ``/my/path.abc.txt.tests`` | ``.tests`` |
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -49,7 +52,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 The extension is: '.txt'
 ```
 

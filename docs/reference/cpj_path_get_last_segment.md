@@ -3,10 +3,11 @@ title: cpj_path_get_last_segment
 description: Gets the last segment of the path.
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Gets the last segment of the path.
 
 ## Description
+
 ```c
 bool cpj_path_get_last_segment(const char *path, struct cpj_segment *segment);
 ```
@@ -14,13 +15,16 @@ bool cpj_path_get_last_segment(const char *path, struct cpj_segment *segment);
 This function gets the last segment of a path. This function may return false if the path doesn't contain any segments, in which case the submitted segment parameter is not modified. The position of the segment is set to the first character after the separator, and the length counts all characters until the end of the path (excluding the separator).
 
 ## Parameters
- * **path**: The path which will be inspected.
- * **segment**: The segment which will be extracted.
+
+* **path**: The path which will be inspected.
+* **segment**: The segment which will be extracted.
 
 ## Return Value
+
 Returns ``true`` if there is a segment or ``false`` if there is none.
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -43,7 +47,8 @@ int main(int argc, char *argv[])
 ```
 
 Ouput:
-```
+
+```txt
 Segment length is '8'.
 The segment is 'path.txt'.
 ```

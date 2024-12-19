@@ -3,24 +3,28 @@ title: cpj_path_get_style
 description: Gets the path style configuration..
 ---
 
-_(since v1.0.0)_  
+_(since v1.0.0)_
 Gets the path style configuration..
 
 ## Description
+
 ```c
 cpj_path_style_t cpj_path_get_style(void);
 ```
 
 ## Description
+
 This function gets the style configuration which is currently used for the paths. This configuration determines how paths are parsed and generated.
 
- * ``CPJ_STYLE_WINDOWS``: Use backslashes as a separator and volume for the root.
- * ``CPJ_STYLE_UNIX``: Use slashes as a separator and a slash for the root.
+* ``CPJ_STYLE_WINDOWS``: Use backslashes as a separator and volume for the root.
+* ``CPJ_STYLE_UNIX``: Use slashes as a separator and a slash for the root.
 
 ## Return Value
+
 Returns the current path style configuration.
 
 ## Example
+
 ```c
 #include <cpj.h>
 #include <stdio.h>
@@ -34,13 +38,14 @@ int main(int argc, char *argv[])
   } else {
     printf("It's the UNIX style.");
   }
-  
+
   return EXIT_SUCCESS;
 }
 ```
 
 Example Ouput:
-```
+
+```txt
 It's the UNIX style.
 ```
 
